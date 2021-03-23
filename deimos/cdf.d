@@ -297,17 +297,16 @@ enum PREV_SPARSERECORDS = 2L;
 * Invalid/reserved constants.
 *****************************************************************************/
 
-enum RESERVED_CDFID = cast(CDFid) NULL; /* Indicates that a CDF hasn't
+enum RESERVED_CDFID = cast(CDFid) null; /* Indicates that a CDF hasn't
 						   been selected yet. */
 enum RESERVED_CDFSTATUS = cast(CDFstatus) -1; /* Indicates that a CDFstatus
 						   hasn't been selected yet. */
 
 enum ILLEGAL_EPOCH_VALUE = -1.0;
-enum ILLEGAL_TT2000_VALUE = -9223372036854775805LL;
-/* as
-   1707-09-22T12:12:10.961224195*/
+enum ILLEGAL_TT2000_VALUE = -9223372036854775805L;
+/* as 1707-09-22T12:12:10.961224195*/
 
-enum FILLED_TT2000_VALUE = -9223372036854775807LL - 1;
+enum FILLED_TT2000_VALUE = -9223372036854775807L - 1;
 
 /******************************************************************************
 * Status codes (CDFstatus)
@@ -672,16 +671,17 @@ enum STRINGDELIMITER = "\\N ";
 * C interface macros.
 ******************************************************************************/
 
-enum CDFattrCreate = CDFcreateAttr;
-enum CDFattrNum = CDFgetAttrNum;
-enum CDFvarCreate = CDFcreaterVar;
-enum CDFvarNum = CDFgetVarNum;
-enum CDFerror = CDFgetStatusText;
-enum CDFattrRename = CDFrenameAttr;
-enum CDFopenCDF = CDFopen;
-enum CDFdeleteCDF = CDFdelete;
-enum CDFcloseCDF = CDFclose;
-enum CDFselectCDF = CDFselect;
+// dstep output adjustments: conversion from enum to alias here
+alias CDFattrCreate = CDFcreateAttr;
+alias CDFattrNum = CDFgetAttrNum;
+alias CDFvarCreate = CDFcreaterVar;
+alias CDFvarNum = CDFgetVarNum;
+alias CDFerror = CDFgetStatusText;
+alias CDFattrRename = CDFrenameAttr;
+alias CDFopenCDF = CDFopen;
+alias CDFdeleteCDF = CDFdelete;
+alias CDFcloseCDF = CDFclose;
+alias CDFselectCDF = CDFselect;
 
 extern (D) auto CDFattrEntryInquire(T0, T1, T2, T3, T4)(auto ref T0 id, auto ref T1 attrNum, auto ref T2 entryNum, auto ref T3 dataType, auto ref T4 numElems)
 {
@@ -803,7 +803,8 @@ extern (D) auto CDFsetAttrzEntryDataSpec(T0, T1, T2, T3)(auto ref T0 id, auto re
     return CDFsetAttrEntryDataSpec(id, 3, attrNum, entryNum, dataType, cast(c_long) -99);
 }
 
-enum CDFvarRename = CDFrenamerVar;
+// dstep output adjustment: change from enum to alias
+alias CDFvarRename = CDFrenamerVar;
 
 extern (D) auto CDFrenamerVar(T0, T1, T2)(auto ref T0 id, auto ref T1 varNum, auto ref T2 varName)
 {
@@ -825,7 +826,7 @@ extern (D) auto CDFinquirezVar(T0, T1, T2, T3, T4, T5, T6, T7, T8)(auto ref T0 i
     return CDFinquireVar(id, 1, varN, varName, dataType, numElems, numDims, dimSizes, recVary, dimVarys);
 }
 
-enum CDFvarPut = CDFputrVarData;
+alias CDFvarPut = CDFputrVarData;  // dstep adjustment
 
 extern (D) auto CDFputrVarData(T0, T1, T2, T3, T4)(auto ref T0 id, auto ref T1 varNum, auto ref T2 recNum, auto ref T3 indices, auto ref T4 value)
 {
@@ -837,7 +838,7 @@ extern (D) auto CDFputzVarData(T0, T1, T2, T3, T4)(auto ref T0 id, auto ref T1 v
     return CDFputVarData(id, 1, varNum, recNum, indices, value);
 }
 
-enum CDFvarGet = CDFgetrVarData;
+alias CDFvarGet = CDFgetrVarData; // dstep adjustment
 
 extern (D) auto CDFgetrVarData(T0, T1, T2, T3, T4)(auto ref T0 id, auto ref T1 varNum, auto ref T2 recNum, auto ref T3 indices, auto ref T4 value)
 {
@@ -849,7 +850,7 @@ extern (D) auto CDFgetzVarData(T0, T1, T2, T3, T4)(auto ref T0 id, auto ref T1 v
     return CDFgetVarData(id, 1, varNum, recNum, indices, value);
 }
 
-enum CDFvarHyperPut = CDFhyperPutrVarData;
+alias CDFvarHyperPut = CDFhyperPutrVarData; // dstep adjustment
 
 extern (D) auto CDFhyperPutrVarData(T0, T1, T2, T3, T4, T5, T6, T7, T8)(auto ref T0 id, auto ref T1 varNum, auto ref T2 recS, auto ref T3 recC, auto ref T4 recI, auto ref T5 indices, auto ref T6 counts, auto ref T7 intervals, auto ref T8 buff)
 {
@@ -861,7 +862,7 @@ extern (D) auto CDFhyperPutzVarData(T0, T1, T2, T3, T4, T5, T6, T7, T8)(auto ref
     return CDFhyperPutVarData(id, 1, varNum, recS, recC, recI, indices, counts, intervals, buff);
 }
 
-enum CDFvarHyperGet = CDFhyperGetrVarData;
+alias CDFvarHyperGet = CDFhyperGetrVarData; // dstep adjustment
 
 extern (D) auto CDFhyperGetrVarData(T0, T1, T2, T3, T4, T5, T6, T7, T8)(auto ref T0 id, auto ref T1 varNum, auto ref T2 recS, auto ref T3 recC, auto ref T4 recI, auto ref T5 indices, auto ref T6 counts, auto ref T7 intervals, auto ref T8 buff)
 {
@@ -873,7 +874,7 @@ extern (D) auto CDFhyperGetzVarData(T0, T1, T2, T3, T4, T5, T6, T7, T8)(auto ref
     return CDFhyperGetVarData(id, 1, varNum, recS, recC, recI, indices, counts, intervals, buff);
 }
 
-enum CDFvarClose = CDFcloserVar;
+alias CDFvarClose = CDFcloserVar;  //dstep adjustment
 
 extern (D) auto CDFcloserVar(T0, T1)(auto ref T0 id, auto ref T1 varNum)
 {
@@ -1445,9 +1446,9 @@ extern (D) auto CDFgetNumvAttributes(T0, T1)(auto ref T0 id, auto ref T1 numvAtt
     return CDFlib(SELECT_, CDF_, id, GET_, CDF_NUMvATTRS_, numvAttrs, NULL_);
 }
 
-extern (D) auto CDFdoc(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 version, auto ref T2 release, auto ref T3 copyright)
+extern (D) auto CDFdoc(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 version_, auto ref T2 release, auto ref T3 copyright)
 {
-    return CDFlib(SELECT_, CDF_, id, GET_, CDF_VERSION_, version, CDF_RELEASE_, release, CDF_COPYRIGHT_, copyright, NULL_);
+    return CDFlib(SELECT_, CDF_, id, GET_, CDF_VERSION_, version_, CDF_RELEASE_, release, CDF_COPYRIGHT_, copyright, NULL_);
 }
 
 extern (D) auto CDFgetDataTypeSize(T0, T1)(auto ref T0 dataType, auto ref T1 numBytes)
@@ -1460,14 +1461,14 @@ extern (D) auto CDFgetLibraryCopyright(T)(auto ref T copyright)
     return CDFlib(GET_, LIB_COPYRIGHT_, copyright, NULL_);
 }
 
-extern (D) auto CDFgetLibraryVersion(T0, T1, T2, T3)(auto ref T0 version, auto ref T1 release, auto ref T2 increment, auto ref T3 subincrement)
+extern (D) auto CDFgetLibraryVersion(T0, T1, T2, T3)(auto ref T0 version_, auto ref T1 release, auto ref T2 increment, auto ref T3 subincrement)
 {
-    return CDFlib(GET_, LIB_VERSION_, version, LIB_RELEASE_, release, LIB_INCREMENT_, increment, LIB_subINCREMENT_, subincrement, NULL_);
+    return CDFlib(GET_, LIB_VERSION_, version_, LIB_RELEASE_, release, LIB_INCREMENT_, increment, LIB_subINCREMENT_, subincrement, NULL_);
 }
 
-extern (D) auto CDFgetVersion(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 version, auto ref T2 release, auto ref T3 increment)
+extern (D) auto CDFgetVersion(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 version_, auto ref T2 release, auto ref T3 increment)
 {
-    return CDFlib(SELECT_, CDF_, id, GET_, CDF_VERSION_, version, CDF_RELEASE_, release, CDF_INCREMENT_, increment, NULL_);
+    return CDFlib(SELECT_, CDF_, id, GET_, CDF_VERSION_, version_, CDF_RELEASE_, release, CDF_INCREMENT_, increment, NULL_);
 }
 
 extern (D) auto CDFgetVarBlockingFactor(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 bf)
@@ -1810,27 +1811,12 @@ extern (D) auto CDFsetzMode(T0, T1)(auto ref T0 id, auto ref T1 zMode)
 /******************************************************************************
 * TT2000 macros define'd
 ******************************************************************************/
-enum CDF_TT2000_from_UTC_string = parseTT2000;
-enum CDF_TT2000_to_UTC_string = encodeTT2000;
-enum CDF_TT2000_from_UTC_parts = computeTT2000;
-enum CDF_TT2000_to_UTC_parts = breakdownTT2000;
+alias CDF_TT2000_from_UTC_string = parseTT2000;  //dstep adjustment
+alias CDF_TT2000_to_UTC_string = encodeTT2000;  //dstep adjustment
+alias CDF_TT2000_from_UTC_parts = computeTT2000;  //dstep adjustment
+alias CDF_TT2000_to_UTC_parts = breakdownTT2000;  //dstep adjustment
 
-enum TT2000breakdown = breakdownTT2000;
-
-/******************************************************************************
-* Function prototypes.
-*     It is assumed that `__cplusplus' is defined for ALL C++ compilers.  If
-* ANSI function prototypes are not desired (for whatever reason), define
-* noPROTOs on the compile command line.  Otherwise, ANSI function prototypes
-* will be used where appropriate.
-******************************************************************************/
-
-extern (D) auto PROTOARGs(T)(auto ref T args)
-{
-    return args;
-}
-
-/* Isn't a prototype needed? */
+alias TT2000breakdown = breakdownTT2000;  //dstep adjustment
 
 CDFstatus CDFlib (c_long op1, ...);
 
@@ -1909,7 +1895,10 @@ void encodeEPOCH1 (double epoch, ref char[17] epString);
 void encodeEPOCH2 (double epoch, ref char[15] epString);
 void encodeEPOCH3 (double epoch, ref char[25] epString);
 void encodeEPOCH4 (double epoch, ref char[24] epString);
-void encodeEPOCHx (double epoch, char[PROTOARGs] format, char[PROTOARGs] encoded);
+
+// manual adjustment to dstep output
+void encodeEPOCHx (double epoch, char[EPOCHx_FORMAT_MAX] format, char[EPOCHx_STRING_MAX] encoded);
+
 void EPOCHtoUnixTime (double* epoch, double* unitTime, int numTimes);
 void UnixTimetoEPOCH (double* unitTime, double* epoch, int numTimes);
 void EPOCH16breakdown (double* epoch, c_long* year, c_long* month, c_long* day, c_long* hour, c_long* minute, c_long* second, c_long* msec, c_long* usec, c_long* nsec, c_long* psec);
@@ -1926,7 +1915,10 @@ void encodeEPOCH16_1 (double* epoch, ref char[25] epString);
 void encodeEPOCH16_2 (double* epoch, ref char[15] epString);
 void encodeEPOCH16_3 (double* epoch, ref char[37] epString);
 void encodeEPOCH16_4 (double* epoch, ref char[33] epString);
-void encodeEPOCH16_x (double* epoch, char[PROTOARGs] format, char[PROTOARGs] encoded);
+
+// Manual dstep output adjustmet
+void encodeEPOCH16_x (double* epoch, char[EPOCHx_FORMAT_MAX] format, char[EPOCHx_STRING_MAX] encoded);
+
 void EPOCH16toUnixTime (double* epoch, double* unixTime, int numTimes);
 void UnixTimetoEPOCH16 (double* unixTime, double* epoch, int numTimes);
 /******************************************************************************
@@ -1958,7 +1950,7 @@ char* CDFgetLeapSecondsTableEnvVar ();
 int CDFgetLeapSecondsTableStatus ();
 
 void CDF_Free_String (c_long numStrings, char** strings);
-c_long FindNumberOfItems (char* string, c_long numElems, char* delimiter);
+c_long FindNumberOfItems (char* string_, c_long numElems, char* delimiter);
 
 /******************************************************************************
 * Synonyms for compatibility with older releases.
@@ -2014,8 +2006,8 @@ enum zVAR_EXTENDRECS_ = zVAR_BLOCKINGFACTOR_;
 enum COL_MAJOR = COLUMN_MAJOR;
 enum NONE_CHECKSUM = NO_CHECKSUM;
 
-enum StrlaststrIgCase = StrLaststrIgCase;
-enum Strlaststr = StrLaststr;
+alias StrlaststrIgCase = StrLaststrIgCase;  //dstep adjustment
+alias Strlaststr = StrLaststr;  //dstep adjustment
 
 /*****************************************************************************/
 
