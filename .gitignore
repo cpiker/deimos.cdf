@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/cdf
+cdf.so
+cdf.dylib
+cdf.dll
+cdf.a
+cdf.lib
+cdf-test-*
+*.exe
+*.o
+*.obj
+*.lst

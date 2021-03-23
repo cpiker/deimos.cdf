@@ -1,0 +1,8 @@
+name "cdf"
+description "Common Data Format (CDF) bindings"
+authors "Chris Piker"
+copyright "Copyright © 2021, Chris Piker"
+license "Boost"
+targetType "sourceLibrary"
+importPaths "."
+version 3.8
