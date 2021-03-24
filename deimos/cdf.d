@@ -100,6 +100,7 @@
 *   -- C. Piker 2021-03-23
 */
 
+module deimos.cdf;
 
 import core.stdc.config;
 import core.sys.posix.sys.types;
