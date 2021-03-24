@@ -4,5 +4,6 @@ authors "Chris Piker"
 copyright "Copyright © 2021, Chris Piker"
 license "Boost"
 targetType "sourceLibrary"
+homepage "https://cdf.gsfc.nasa.gov/"
 importPaths "."
 version 3.8
