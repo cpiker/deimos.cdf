@@ -1,4 +1,4 @@
-# cdf-deimos
+# deimos.cdf
 Common Data Format (CDF) library D language bindings
 
 
