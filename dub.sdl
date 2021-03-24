@@ -1,5 +1,5 @@
 name "cdf"
-description "Common Data Format (CDF) bindings"
+description "Common Data Format (CDF) D language prototypes"
 authors "Chris Piker"
 copyright "Copyright © 2021, Chris Piker"
 license "Boost"
