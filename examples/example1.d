@@ -10,7 +10,8 @@
 *
 ******************************************************************************/
 
-// Necessary module import
+import std.stdio;
+
 import cdf;
 
 
@@ -20,9 +21,7 @@ int main () {
 	CDFid id;            /* CDF identifier. */
 	CDFstatus status;    /* CDF completion status. */
 
-	FILE *fp;            /* File pointer - used to read input data file. */
-
-	const char*[] title = {"CDF title", "Author: CDF"};
+	string[] title = ["CDF title", "Author: CDF"];
 	short[181] lat;
 	int   time, i; 
 	int*  image;
@@ -37,18 +36,18 @@ int main () {
 	assert(int.sizeof == CDF_INT4);	/* Test if int matches with CDF_INT4 */
 
 	//Create the CDF.
-	status = CDFcreateCDF ("example1", &id);
+	status = CDFcreateCDF ("example1".ptr, &id);
 	if (status != CDF_OK) StatusHandler (status);
 
 	//Create zVariables.
 	status = CDFcreatezVar (id, 
-		"Time",    /* Variable name - case sensitive */
+		"Time".ptr,    /* Variable name - case sensitive */
 		CDF_INT4,  /* Data type */
 		1L,        /* Number of elements */
 		0L,        /* Dimentionality     */
-		dimSizes,  /* Dummy dimension sizes since dim = 0 */
+		null,      /* Dummy dimension sizes since dim = 0 */
 		VARY,      /* Record variance */
-		VARY,      /* Dimension variance */
+		null,      /* Dimension variance */
 		&TimeVarNum
 	);
 	if (status != CDF_OK) StatusHandler (status);
@@ -56,16 +55,16 @@ int main () {
 	dimSizes[0] = 181;
 	dimVarys[0] = VARY;
 	dimVarys[1] = VARY;
-	status = CDFcreatezVar (id, "Latitude", CDF_INT2, 1L, 1L, dimSizes,
-	                         VARY, dimVarys, &LatVarNum);
+	status = CDFcreatezVar (id, "Latitude".ptr, CDF_INT2, 1L, 1L, dimSizes.ptr,
+	                         VARY, dimVarys.ptr, &LatVarNum);
 	if (status != CDF_OK) StatusHandler (status);
 
 	dimSizes[0] = 10;
 	dimSizes[1] = 20;
 	dimVarys[0] = VARY;
 	dimVarys[1] = VARY;
-	status = CDFcreatezVar (id, "Image", CDF_INT4, 1L, 2L, dimSizes,
-   	                      VARY, dimVarys, &ImageVarNum);
+	status = CDFcreatezVar (id, "Image".ptr, CDF_INT4, 1L, 2L, dimSizes.ptr,
+   	                      VARY, dimVarys.ptr, &ImageVarNum);
 	if (status != CDF_OK) StatusHandler (status);
 
 	// Define compression for the 'Image' variable. 
@@ -76,13 +75,13 @@ int main () {
 
 	// Create global and variable attributes.
 
-	status = CDFcreateAttr (id, "TITLE", GLOBAL_SCOPE, &titleAttrNum);
+	status = CDFcreateAttr (id, "TITLE".ptr, GLOBAL_SCOPE, &titleAttrNum);
 	if (status != CDF_OK) StatusHandler (status);
 
-	status = CDFcreateAttr (id, "FIELDNAM", VARIABLE_SCOPE, &attrNum);
+	status = CDFcreateAttr (id, "FIELDNAM".ptr, VARIABLE_SCOPE, &attrNum);
 	if (status != CDF_OK) StatusHandler (status);
 
-	status = CDFcreateAttr (id, "UNITS", VARIABLE_SCOPE, &attrNum);
+	status = CDFcreateAttr (id, "UNITS".ptr, VARIABLE_SCOPE, &attrNum);
 	if (status != CDF_OK) StatusHandler (status);
 
 	// Write TITLE gAttribute gEntry.
@@ -98,14 +97,14 @@ int main () {
 
 	//Write vAttribute zEntries for 'Time' zVariable.
 
-	status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FIELDNAM"), 
-                           CDFvarNum(id,"Time"), CDF_CHAR, 19L,
-                           "Time of observation");
+	status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FIELDNAM".ptr), 
+                           CDFvarNum(id,"Time".ptr), CDF_CHAR, 19L,
+                           "Time of observation".ptr);
 	if (status != CDF_OK) StatusHandler (status);
 
-	status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"UNITS"), 
-                           CDFvarNum(id,"Time"), CDF_CHAR, 11L,
-                           "Hour/Minute");
+	status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"UNITS".ptr), 
+                           CDFvarNum(id,"Time".ptr), CDF_CHAR, 11L,
+                           "Hour/Minute".ptr);
 
 	// Write data for 'Time' zVariable.
 	recNum = 0L;
@@ -177,7 +176,7 @@ void StatusHandler (CDFstatus status)
 	char[CDF_ERRTEXT_LEN+1] message;
 
 	if (status < CDF_WARN) {
-		printf ("An error has occurred, halting...\n");
+		writeln ("An error has occurred, halting...");
 		CDFgetStatusText (status, message);
 		printf ("%s\n", message);
 		exit(1);

@@ -5,40 +5,40 @@
 ******************************************************************************/
 /******************************************************************************
 *
-*  NSSDC/CDF				CDF Header file for C/C++ applications.
+*  NSSDC/CDF            CDF Header file for C/C++ applications.
 *
 *  Version 3.5d, 14-Dec-97, Hughes STX.
 *
 *  Modification history:
 *
-*   V1.0  22-Jan-91, R Kulkarni	Original version (for CDF V2.0).
-*		     J Love
+*   V1.0  22-Jan-91, R Kulkarni   Original version (for CDF V2.0).
+*           J Love
 *   V2.0   3-Jun-91, J Love     Modified for CDF V2.1 enhancements,
-*				namely the INTERNAL interface and the
-*				MULTI/SINGLE file option.  Added
-*				macros to replace C i/f functions.
-*   V2.1  20-Jun-91, J Love	Added function prototypes.
-*   V2.2   8-Aug-91, J Love	Increment for CDF V2.1.2.  Use
-*				'CDFlib'.  Renamed a few items.
-*   V3.0  19-May-92, J Love	IBM PC & HP-UX port.  CDF V2.2.
-*   V3.1  23-Sep-92, J Love	CDF V2.3 (shareable/NeXT/zVar).
-*   V3.1a  5-Oct-92, J Love	CDF V2.3.0a (NeXT/encoding).
-*   V3.1b  6-Oct-92, J Love	CDF V2.3.0b (CDFcompare).
-*   V3.1c 27-Oct-92, J Love	CDF V2.3.0c (pad values).
-*   V3.2  12-Jan-94, J Love	CDF V2.4.
-*   V3.2a  4-Feb-94, J Love	DEC Alpha/OpenVMS port.
-*   V3.2b 22-Feb-94, J Love	Spelling lesson.
-*   V3.3   8-Dec-94, J Love	CDF V2.5.
-*   V3.3a  3-Mar-95, J Love	Solaris 2.3 IDL i/f.
-*   V3.4  28-Mar-95, J Love	POSIX.
-*   V3.4a  8-May-95, J Love	ILLEGAL_EPOCH_VALUE.
-*   V3.4b  9-Jun-95, J Love	EPOCH custom format.
-*   V3.4c 20-Jul-95, J Love	CDFexport-related changes.
-*   V3.5  12-Sep-96, J Love	CDF V2.6.
-*   V3.5a 21-Feb-97, J Love	Removed RICE.
-*   V3.5b  9-Mar-97, J Love	Windows NT for MS Visual C++ 4.0 on an IBM PC.
-*   V3.5c  2-Sep-97, J Love	`__STDC__' not defined for all AIX compilers.
-*   V3.5d 14-Dec-97, J Love	Added ALPHAVMSi encoding.
+*            namely the INTERNAL interface and the
+*            MULTI/SINGLE file option.  Added
+*            macros to replace C i/f functions.
+*   V2.1  20-Jun-91, J Love   Added function prototypes.
+*   V2.2   8-Aug-91, J Love   Increment for CDF V2.1.2.  Use
+*            'CDFlib'.  Renamed a few items.
+*   V3.0  19-May-92, J Love   IBM PC & HP-UX port.  CDF V2.2.
+*   V3.1  23-Sep-92, J Love   CDF V2.3 (shareable/NeXT/zVar).
+*   V3.1a  5-Oct-92, J Love   CDF V2.3.0a (NeXT/encoding).
+*   V3.1b  6-Oct-92, J Love   CDF V2.3.0b (CDFcompare).
+*   V3.1c 27-Oct-92, J Love   CDF V2.3.0c (pad values).
+*   V3.2  12-Jan-94, J Love   CDF V2.4.
+*   V3.2a  4-Feb-94, J Love   DEC Alpha/OpenVMS port.
+*   V3.2b 22-Feb-94, J Love   Spelling lesson.
+*   V3.3   8-Dec-94, J Love   CDF V2.5.
+*   V3.3a  3-Mar-95, J Love   Solaris 2.3 IDL i/f.
+*   V3.4  28-Mar-95, J Love   POSIX.
+*   V3.4a  8-May-95, J Love   ILLEGAL_EPOCH_VALUE.
+*   V3.4b  9-Jun-95, J Love   EPOCH custom format.
+*   V3.4c 20-Jul-95, J Love   CDFexport-related changes.
+*   V3.5  12-Sep-96, J Love   CDF V2.6.
+*   V3.5a 21-Feb-97, J Love   Removed RICE.
+*   V3.5b  9-Mar-97, J Love   Windows NT for MS Visual C++ 4.0 on an IBM PC.
+*   V3.5c  2-Sep-97, J Love   `__STDC__' not defined for all AIX compilers.
+*   V3.5d 14-Dec-97, J Love   Added ALPHAVMSi encoding.
 *   V3.6  08-Apr-04, M Liu      Added  new data type CDF_EPOCH16 and some
 *                               epoch functions related to the new type.
 *   V3.7  28-Apr-09, M Liu      Modified MAC_ENCODING/DECODEING to PPC_ENCODING
@@ -63,6 +63,42 @@
 *   V3.14 10-Jan-18, M Liu      Added ARM and IA64 openVMS encoding.
 ******************************************************************************/
 
+/*****************************************************************************
+* Conversion Notes:
+*
+* The CDF library makes heavy use of function macros to wrap calls to a 
+* lower level function named: CDFLib().  In the spirit (for good or for ill)
+* of the old Motif libraries this as a var-args function with custom integer
+* type specifiers.  The net effect of function macros paired with a var-args
+* uber function is type erasure.  This is unfortunate as code using the 
+* CDF libray must provide pointers proper C data types or else calls to CDFLib
+* will fail horribly.  Fortunatly proper call signatures are included in the
+* C Referenece Manual available from:
+*
+*  https://spdf.gsfc.nasa.gov/pub/software/cdf/doc/cdf380/cdf380crm.pdf
+*
+* The resulting D prototypes were built from a combination of the actual C
+* header file and the users guide via the following procedure.
+* 
+* 1. Invoke dstep on the included cdf.h header
+*    
+* 2. Convert the cdf380crm.pdf to Markdown.  This was handled via a tool
+*    provided at https://pdf2md.morethan.io/
+*    
+* 3. All D templates that invoke functions with proper type information 
+*    were left as is.
+* 
+* 4. All templates that call CDFLib() were converted to actual D functions
+*    so that type information is available to the compiler.
+*
+* Currently these steps are manual, just to get going.  An automatic converter
+* could be provided in the future that would also generate ddoc comments from
+* the users guide.
+*
+*   -- C. Piker 2021-03-23
+*/
+
+
 import core.stdc.config;
 
 extern (C):
@@ -86,9 +122,9 @@ extern __gshared double* TT2000NULL;
 ******************************************************************************/
 
 enum CDF_MIN_DIMS = 0; /* Min number of dimensions a CDF
-					   variable may have */
+                  variable may have */
 enum CDF_MAX_DIMS = 10; /* Max number of dimensions a CDF
-					   variable may have */
+                  variable may have */
 
 /******************************************************************************
 * Lengths
@@ -141,7 +177,7 @@ enum CDF_REAL8 = 22L;
 enum CDF_EPOCH = 31L; /* Standard style. */
 enum CDF_EPOCH16 = 32L; /* Extended style. */
 enum CDF_TIME_TT2000 = 33L; /* One more style with leap seconds
-					   and J2000 base time. */
+                  and J2000 base time. */
 enum CDF_BYTE = 41L; /* same as CDF_INT1 (signed) */
 enum CDF_FLOAT = 44L; /* same as CDF_REAL4 */
 enum CDF_DOUBLE = 45L; /* same as CDF_REAL8 */
@@ -298,9 +334,9 @@ enum PREV_SPARSERECORDS = 2L;
 *****************************************************************************/
 
 enum RESERVED_CDFID = cast(CDFid) null; /* Indicates that a CDF hasn't
-						   been selected yet. */
+                     been selected yet. */
 enum RESERVED_CDFSTATUS = cast(CDFstatus) -1; /* Indicates that a CDFstatus
-						   hasn't been selected yet. */
+                     hasn't been selected yet. */
 
 enum ILLEGAL_EPOCH_VALUE = -1.0;
 enum ILLEGAL_TT2000_VALUE = -9223372036854775805L;
@@ -671,17 +707,16 @@ enum STRINGDELIMITER = "\\N ";
 * C interface macros.
 ******************************************************************************/
 
-// dstep output adjustments: conversion from enum to alias here
-alias CDFattrCreate = CDFcreateAttr;
-alias CDFattrNum = CDFgetAttrNum;
-alias CDFvarCreate = CDFcreaterVar;
-alias CDFvarNum = CDFgetVarNum;
-alias CDFerror = CDFgetStatusText;
-alias CDFattrRename = CDFrenameAttr;
-alias CDFopenCDF = CDFopen;
-alias CDFdeleteCDF = CDFdelete;
-alias CDFcloseCDF = CDFclose;
-alias CDFselectCDF = CDFselect;
+alias CDFattrCreate = CDFcreateAttr;  // dstep output changed
+alias CDFattrNum = CDFgetAttrNum;     // dstep output changed
+alias CDFvarCreate = CDFcreaterVar;   // dstep output changed
+alias CDFvarNum = CDFgetVarNum;       // dstep output changed
+alias CDFerror = CDFgetStatusText;    // dstep output changed
+alias CDFattrRename = CDFrenameAttr;  // dstep output changed
+alias CDFopenCDF = CDFopen;           // dstep output changed
+alias CDFdeleteCDF = CDFdelete;       // dstep output changed
+alias CDFcloseCDF = CDFclose;         // dstep output changed
+alias CDFselectCDF = CDFselect;       // dstep output changed
 
 extern (D) auto CDFattrEntryInquire(T0, T1, T2, T3, T4)(auto ref T0 id, auto ref T1 attrNum, auto ref T2 entryNum, auto ref T3 dataType, auto ref T4 numElems)
 {
@@ -826,7 +861,7 @@ extern (D) auto CDFinquirezVar(T0, T1, T2, T3, T4, T5, T6, T7, T8)(auto ref T0 i
     return CDFinquireVar(id, 1, varN, varName, dataType, numElems, numDims, dimSizes, recVary, dimVarys);
 }
 
-alias CDFvarPut = CDFputrVarData;  // dstep adjustment
+alias CDFvarPut = CDFputrVarData;  // dstep output changed
 
 extern (D) auto CDFputrVarData(T0, T1, T2, T3, T4)(auto ref T0 id, auto ref T1 varNum, auto ref T2 recNum, auto ref T3 indices, auto ref T4 value)
 {
@@ -838,7 +873,7 @@ extern (D) auto CDFputzVarData(T0, T1, T2, T3, T4)(auto ref T0 id, auto ref T1 v
     return CDFputVarData(id, 1, varNum, recNum, indices, value);
 }
 
-alias CDFvarGet = CDFgetrVarData; // dstep adjustment
+alias CDFvarGet = CDFgetrVarData; // dstep output changed
 
 extern (D) auto CDFgetrVarData(T0, T1, T2, T3, T4)(auto ref T0 id, auto ref T1 varNum, auto ref T2 recNum, auto ref T3 indices, auto ref T4 value)
 {
@@ -850,7 +885,7 @@ extern (D) auto CDFgetzVarData(T0, T1, T2, T3, T4)(auto ref T0 id, auto ref T1 v
     return CDFgetVarData(id, 1, varNum, recNum, indices, value);
 }
 
-alias CDFvarHyperPut = CDFhyperPutrVarData; // dstep adjustment
+alias CDFvarHyperPut = CDFhyperPutrVarData; // dstep output changed
 
 extern (D) auto CDFhyperPutrVarData(T0, T1, T2, T3, T4, T5, T6, T7, T8)(auto ref T0 id, auto ref T1 varNum, auto ref T2 recS, auto ref T3 recC, auto ref T4 recI, auto ref T5 indices, auto ref T6 counts, auto ref T7 intervals, auto ref T8 buff)
 {
@@ -862,7 +897,7 @@ extern (D) auto CDFhyperPutzVarData(T0, T1, T2, T3, T4, T5, T6, T7, T8)(auto ref
     return CDFhyperPutVarData(id, 1, varNum, recS, recC, recI, indices, counts, intervals, buff);
 }
 
-alias CDFvarHyperGet = CDFhyperGetrVarData; // dstep adjustment
+alias CDFvarHyperGet = CDFhyperGetrVarData; // dstep output changed
 
 extern (D) auto CDFhyperGetrVarData(T0, T1, T2, T3, T4, T5, T6, T7, T8)(auto ref T0 id, auto ref T1 varNum, auto ref T2 recS, auto ref T3 recC, auto ref T4 recI, auto ref T5 indices, auto ref T6 counts, auto ref T7 intervals, auto ref T8 buff)
 {
@@ -874,7 +909,7 @@ extern (D) auto CDFhyperGetzVarData(T0, T1, T2, T3, T4, T5, T6, T7, T8)(auto ref
     return CDFhyperGetVarData(id, 1, varNum, recS, recC, recI, indices, counts, intervals, buff);
 }
 
-alias CDFvarClose = CDFcloserVar;  //dstep adjustment
+alias CDFvarClose = CDFcloserVar;  // dstep output changed
 
 extern (D) auto CDFcloserVar(T0, T1)(auto ref T0 id, auto ref T1 varNum)
 {
@@ -1220,13 +1255,14 @@ extern (D) auto CDFinsertrVarRecordsByVarID(T0, T1, T2, T3, T4)(auto ref T0 id, 
  * CLOSE_  *
  *         */
 
-extern (D) auto CDFclose(T)(auto ref T id)
-{
-    return CDFlib(SELECT_, CDF_, id, CLOSE_, CDF_, NULL_);
+//extern (D) auto CDFclose(T)(auto ref T id)
+//### 5.8 CDFclose
+extern (D) CDFstatus CDFclose(CDFid id){
+   return CDFlib(SELECT_, CDF_, id, CLOSE_, CDF_, NULL_);
 }
 
-extern (D) auto CDFcloseVar(T0, T1, T2)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum)
-{
+//extern (D) CDFstatus CDFcloseVar(T0, T1, T2)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum)
+extern (D) CDFcloseVar(CDFid id, int zVar, c_long varNum){
     return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, CLOSE_, zVar ? zVAR_ : rVAR_, NULL_);
 }
 
@@ -1234,8 +1270,11 @@ extern (D) auto CDFcloseVar(T0, T1, T2)(auto ref T0 id, auto ref T1 zVar, auto r
  * CONFIRM_  *
  *           */
 
-extern (D) auto CDFconfirmAttrExistence(T0, T1)(auto ref T0 id, auto ref T1 attrName)
-{
+//extern (D) auto CDFconfirmAttrExistence(T0, T1)(auto ref T0 id, auto ref T1 attrName)
+extern (D) CDFstatus CDFconfirmAttrExistence(
+   CDFid id, /* in */
+   const char *attrName, /* in */
+){
     return CDFlib(SELECT_, CDF_, id, CONFIRM_, ATTR_EXISTENCE_, attrName, NULL_);
 }
 
@@ -1333,6 +1372,8 @@ extern (D) auto CDFcreate(T0, T1, T2, T3, T4, T5)(auto ref T0 CDFname, auto ref 
     return CDFlib(CREATE_, CDF_, CDFname, numDims, dimSizes, id, PUT_, CDF_ENCODING_, encoding, CDF_MAJORITY_, majority, NULL_);
 }
 
+
+
 extern (D) auto CDFcreateAttr(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 attrName, auto ref T2 attrScope, auto ref T3 attrNum)
 {
     return CDFlib(SELECT_, CDF_, id, CREATE_, ATTR_, attrName, attrScope, attrNum, NULL_);
@@ -1343,9 +1384,27 @@ extern (D) auto CDFcreaterVar(T0, T1, T2, T3, T4, T5, T6)(auto ref T0 id, auto r
     return CDFlib(SELECT_, CDF_, id, CREATE_, rVAR_, varName, dataType, numElements, recVary, dimVarys, varNum, NULL_);
 }
 
-extern (D) auto CDFcreatezVar(T0, T1, T2, T3, T4, T5, T6, T7, T8)(auto ref T0 id, auto ref T1 varName, auto ref T2 dataType, auto ref T3 numElements, auto ref T4 numDims, auto ref T5 dimSizes, auto ref T6 recVary, auto ref T7 dimVarys, auto ref T8 varNum)
+// dstep output changed
+//extern (D) auto CDFcreatezVar(T0, T1, T2, T3, T4, T5, T6, T7, T8)(auto ref T0 id, auto ref T1 varName, auto ref T2 dataType, auto ref T3 numElements, auto ref T4 numDims, auto ref T5 dimSizes, auto ref T6 recVary, auto ref T7 dimVarys, auto ref T8 varNum)
+//{
+//    return CDFlib(SELECT_, CDF_, id, CREATE_, zVAR_, varName, dataType, numElements, numDims, dimSizes, recVary, dimVarys, varNum, NULL_);
+//}
+// 6.3.4 CDFcreatezVar
+extern (D) CDFstatus CDFcreatezVar( /* out -- Completion status code. */
+  CDFid id, /* in -- CDF identifier. */
+  const char *varName, /* in -- zVariable name. */
+  c_long dataType, /* in -- Data type. */
+  c_long numElements, /* in -- Number of elements (of the data type). */
+  c_long numDims, /* in -- Number of dimensions. */
+  const c_long dimSizes, /* in -- Dimension sizes */
+  c_long recVariance, /* in -- Record variance. */
+  const c_long dimVariances, /* in -- Dimension variances. */
+  c_long *varNum) /* out -- zVariable number. */
 {
-    return CDFlib(SELECT_, CDF_, id, CREATE_, zVAR_, varName, dataType, numElements, numDims, dimSizes, recVary, dimVarys, varNum, NULL_);
+   return CDFlib(
+      SELECT_, CDF_, id, CREATE_, zVAR_, varName, dataType, numElements, 
+      numDims, dimSizes, recVary, dimVarys, varNum, NULL_
+   );
 }
 
 /*
@@ -1811,16 +1870,18 @@ extern (D) auto CDFsetzMode(T0, T1)(auto ref T0 id, auto ref T1 zMode)
 /******************************************************************************
 * TT2000 macros define'd
 ******************************************************************************/
-alias CDF_TT2000_from_UTC_string = parseTT2000;  //dstep adjustment
-alias CDF_TT2000_to_UTC_string = encodeTT2000;  //dstep adjustment
-alias CDF_TT2000_from_UTC_parts = computeTT2000;  //dstep adjustment
-alias CDF_TT2000_to_UTC_parts = breakdownTT2000;  //dstep adjustment
+alias CDF_TT2000_from_UTC_string = parseTT2000;   // dstep output changed
+alias CDF_TT2000_to_UTC_string = encodeTT2000;    // dstep output changed
+alias CDF_TT2000_from_UTC_parts = computeTT2000;  // dstep output changed
+alias CDF_TT2000_to_UTC_parts = breakdownTT2000;  // dstep output changed
 
-alias TT2000breakdown = breakdownTT2000;  //dstep adjustment
+alias TT2000breakdown = breakdownTT2000;  // dstep output changed
 
 CDFstatus CDFlib (c_long op1, ...);
 
-CDFstatus CDFcreateCDF (char* name, CDFid* id);
+//CDFstatus CDFcreateCDF (char* name, CDFid* id);
+CDFstatus CDFcreateCDF (const char* name, CDFid* id);  // dstep output changed, upstream notified
+
 CDFstatus CDFattrInquire (CDFid id, c_long attrNum, char* attrName, c_long* attrScope, c_long* maxgrEntry);
 CDFstatus CDFinquireAttr (CDFid id, c_long attrNum, char* attrName, c_long* attrScope, c_long* maxgEntry, c_long* maxrEntry, c_long* maxzEntry);
 CDFstatus CDFinquireAttrEntry (CDFid id, int grzEntry, c_long attrNum, c_long entryNum, c_long* dataType, c_long* numElems);
@@ -1896,7 +1957,7 @@ void encodeEPOCH2 (double epoch, ref char[15] epString);
 void encodeEPOCH3 (double epoch, ref char[25] epString);
 void encodeEPOCH4 (double epoch, ref char[24] epString);
 
-// manual adjustment to dstep output
+// dstep output changed
 void encodeEPOCHx (double epoch, char[EPOCHx_FORMAT_MAX] format, char[EPOCHx_STRING_MAX] encoded);
 
 void EPOCHtoUnixTime (double* epoch, double* unitTime, int numTimes);
@@ -1916,7 +1977,7 @@ void encodeEPOCH16_2 (double* epoch, ref char[15] epString);
 void encodeEPOCH16_3 (double* epoch, ref char[37] epString);
 void encodeEPOCH16_4 (double* epoch, ref char[33] epString);
 
-// Manual dstep output adjustmet
+// dstep output changed
 void encodeEPOCH16_x (double* epoch, char[EPOCHx_FORMAT_MAX] format, char[EPOCHx_STRING_MAX] encoded);
 
 void EPOCH16toUnixTime (double* epoch, double* unixTime, int numTimes);
@@ -2006,8 +2067,8 @@ enum zVAR_EXTENDRECS_ = zVAR_BLOCKINGFACTOR_;
 enum COL_MAJOR = COLUMN_MAJOR;
 enum NONE_CHECKSUM = NO_CHECKSUM;
 
-alias StrlaststrIgCase = StrLaststrIgCase;  //dstep adjustment
-alias Strlaststr = StrLaststr;  //dstep adjustment
+alias StrlaststrIgCase = StrLaststrIgCase;  // dstep output changed
+alias Strlaststr = StrLaststr;              // dstep output changed
 
 /*****************************************************************************/
 
