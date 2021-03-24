@@ -68,17 +68,18 @@
 *
 * The CDF library makes heavy use of function macros to wrap calls to a 
 * lower level function named: CDFLib().  In the spirit (for good or for ill)
-* of the old Motif libraries this as a var-args function with custom integer
+* of the old Motif libraries this is a var-args function with custom integer
 * type specifiers.  The net effect of function macros paired with a var-args
 * uber function is type erasure.  This is unfortunate as code using the 
-* CDF libray must provide pointers proper C data types or else calls to CDFLib
-* will fail horribly.  Fortunatly proper call signatures are included in the
-* C Referenece Manual available from:
+* CDF libray must provide proper C data types or else calls to CDFLib
+* will fail horribly.  The proper data types are not documented in the header
+* but rather in the C Reference manual at:
 *
-*  https://spdf.gsfc.nasa.gov/pub/software/cdf/doc/cdf380/cdf380crm.pdf
+*   https://spdf.gsfc.nasa.gov/pub/software/cdf/doc/cdf380/cdf380crm.pdf
 *
-* The resulting D prototypes were built from a combination of the actual C
-* header file and the users guide via the following procedure.
+* To build the D prototypes, Appendix B of the above manual was used in 
+* in conjunction with the supplied C header files cdf.h, and to a much 
+* lesser extent, cdfdist.h. 
 * 
 * 1. Invoke dstep on the included cdf.h header
 *    
@@ -89,11 +90,12 @@
 *    were left as is.
 * 
 * 4. All templates that call CDFLib() were converted to actual D functions
-*    so that type information is available to the compiler.
+*    so that type information is available to creators of higher level
+*    modules.
 *
-* Currently these steps are manual, just to get going.  An automatic converter
-* could be provided in the future that would also generate ddoc comments from
-* the users guide.
+* The first iteration of this process was handled manually.  For future 
+* updates an automatic converter shoud be written using the experience 
+* gained from converting version 3.8. 
 *
 *   -- C. Piker 2021-03-23
 */
@@ -934,6 +936,10 @@ extern (D) auto CDFclosezVar(T0, T1)(auto ref T0 id, auto ref T1 varNum)
     return CDFcloseVar(id, 1, varNum);
 }
 
+extern (D) CDFstatus CDFdelete(CDFid id){
+	return CDFlib (SELECT_, CDF_, id, DELETE_, CDF_, NULL_);
+}
+
 extern (D) auto CDFdeleteAttrgEntry(T0, T1, T2)(auto ref T0 id, auto ref T1 attrNum, auto ref T2 entryNum)
 {
     return CDFdeleteAttrEntry(id, 1, attrNum, entryNum);
@@ -1204,9 +1210,9 @@ extern (D) auto CDFgetzVarCacheSize(T0, T1, T2)(auto ref T0 id, auto ref T1 varN
     return CDFgetVarCacheSize(id, 1, varNum, numBuffers);
 }
 
-extern (D) auto CDFconfirmzVarExistence(T0, T1)(auto ref T0 id, auto ref T1 varName)
+extern (D) auto CDFconfirmzVarExistence(T0, T1)(auto ref T0 id, auto ref T1 varNum)
 {
-    return CDFconfirmVarExistence(id, 1, varName);
+    return CDFconfirmVarExistence(id, 1, varNum);
 }
 
 extern (D) auto CDFconfirmzVarPadValueExistence(T0, T1)(auto ref T0 id, auto ref T1 varNum)
@@ -1312,7 +1318,7 @@ extern (D) CDFstatus CDFgetDecoding (
 }
 extern (D) CDFstatus CDFgetName (
 	CDFid id, /* in */
-	char *name /* out */
+	char *cdfName /* out */
 ){
     return CDFlib(SELECT_, CDF_, id, CONFIRM_, CDF_NAME_, cdfName, NULL_);
 }
@@ -1327,7 +1333,7 @@ extern (D) CDFstatus CDFgetNegtoPosfp0Mode (
 //extern (D) auto CDFgetReadOnlyMode(T0, T1)(auto ref T0 id, auto ref T1 readOnlyMode)
 extern (D) CDFstatus CDFgetReadOnlyMode (
 	CDFid id, /* in */
-	c_long *mode /* out */
+	c_long *readOnlyMode /* out */
 ){
     return CDFlib(SELECT_, CDF_, id, CONFIRM_, CDF_READONLY_MODE_, readOnlyMode, NULL_);
 }
@@ -1380,7 +1386,7 @@ extern (D) CDFstatus CDFconfirmVarExistence (
 	int zVar, /* in */
 	c_long varNum /* in */
 ){
-    return CDFlib(SELECT_, CDF_, id, CONFIRM_, zVar ? zVAR_EXISTENCE_ : rVAR_EXISTENCE_, varName, NULL_);
+    return CDFlib(SELECT_, CDF_, id, CONFIRM_, zVar ? zVAR_EXISTENCE_ : rVAR_EXISTENCE_, varNum, NULL_);
 }
 
 //extern (D) auto CDFconfirmVarPadValueExistence(T0, T1, T2)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum)
@@ -1518,7 +1524,10 @@ extern (D) CDFstatus CDFdeletezVarRecords (
 	c_long startRec, /* in */
 	c_long endRec /* in */
 ){
-    return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, DELETE_, zVar ? zVAR_RECORDS_ : rVAR_RECORDS_, firstRec, lastRec, NULL_);
+    return CDFlib(
+	 	SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, DELETE_, 
+		zVar ? zVAR_RECORDS_ : rVAR_RECORDS_, startRec, endRec, NULL_
+	);
 }
 
 //extern (D) auto CDFdeleteVarRecordsRenumber(T0, T1, T2, T3, T4)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 firstRec, auto ref T4 lastRec)
@@ -1529,7 +1538,11 @@ extern (D) CDFstatus CDFdeletezVarRecordsRenumber (
 	c_long startRec, /* in */
 	c_long endRec /* in */
 ){
-    return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, DELETE_, zVar ? zVAR_RECORDS_RENUMBER_ : rVAR_RECORDS_RENUMBER_, firstRec, lastRec, NULL_);
+    return CDFlib(
+	 	SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, 
+		DELETE_, zVar ? zVAR_RECORDS_RENUMBER_ : rVAR_RECORDS_RENUMBER_, 
+		startRec, endRec, NULL_
+	);
 }
 
 /*
@@ -1561,13 +1574,13 @@ extern (D) CDFstatus CDFgetCompression (
 	c_long *compressionParms, /* out */
 	c_long *compressionPercent /* out */
 ){
-    return CDFlib(SELECT_, CDF_, id, GET_, CDF_COMPRESSION_, cType, cParms, cPercent, NULL_);
+    return CDFlib(SELECT_, CDF_, id, GET_, CDF_COMPRESSION_, compressionType, compressionParms, compressionPercent, NULL_);
 }
 
 //extern (D) auto CDFgetCopyright(T0, T1)(auto ref T0 id, auto ref T1 copyright)
 extern (D) CDFstatus CDFgetCopyright (
 	CDFid id, /* in */
-	char *Copyright /* out */
+	char *copyright /* out */
 ){
     return CDFlib(SELECT_, CDF_, id, GET_, CDF_COPYRIGHT_, copyright, NULL_);
 }
@@ -1604,7 +1617,7 @@ extern (D) CDFstatus CDFgetCompressionInfo (
 	OFF_T *compressionSize, /* out */
 	OFF_T *uncompressionSize /* out */
 ){
-    return CDFlib(GET_, CDF_INFO_, name, cType, cParms, cSize, uSize, NULL_);
+    return CDFlib(GET_, CDF_INFO_, cdfName, compressionType, compressionParms, compressionSize, uncompressionSize, NULL_);
 }
 
 //extern (D) auto CDFgetMajority(T0, T1)(auto ref T0 id, auto ref T1 majority)
@@ -1626,7 +1639,7 @@ extern (D) CDFstatus CDFgetNumAttributes (
 //extern (D) auto CDFgetNumgAttributes(T0, T1)(auto ref T0 id, auto ref T1 numgAttrs)
 extern (D) CDFstatus CDFgetNumgAttributes (
 	CDFid id, /* in */
-	c_long *numAttrs /* out */
+	c_long *numgAttrs /* out */
 ){
     return CDFlib(SELECT_, CDF_, id, GET_, CDF_NUMgATTRS_, numgAttrs, NULL_);
 }
@@ -1635,7 +1648,7 @@ extern (D) CDFstatus CDFgetNumgAttributes (
 extern (D) CDFstatus CDFgetNumVars (
 	CDFid id, /* in */
 	int zVar, /* in */
-	c_long *numzVars /* out */
+	c_long *numVars /* out */
 ){
     return CDFlib(SELECT_, CDF_, id, GET_, zVar ? CDF_NUMzVARS_ : CDF_NUMrVARS_, numVars, NULL_);
 }
@@ -1643,17 +1656,21 @@ extern (D) CDFstatus CDFgetNumVars (
 //extern (D) auto CDFgetNumvAttributes(T0, T1)(auto ref T0 id, auto ref T1 numvAttrs)
 extern (D) CDFstatus CDFgetNumvAttributes (
 	CDFid id, /* in */
-	c_long *numAttrs /* out */
+	c_long *numvAttrs /* out */
 ){
     return CDFlib(SELECT_, CDF_, id, GET_, CDF_NUMvATTRS_, numvAttrs, NULL_);
 }
 
 //extern (D) auto CDFdoc(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 version_, auto ref T2 release, auto ref T3 copyright)
-extern (D) CDFstatus CDFdoc (id, version_, release, text)
+/** 
+ * Params:
+ *   text = must point to a location of size CDF_DOCUMENT_LEN + 1 or larger 
+ */
+extern (D) CDFstatus CDFdoc (
 	CDFid id, /* in */
 	c_long *version_, /* out */
 	c_long *release, /* out */
-	char text[CDF_DOCUMENT_LEN+1] /* out */
+	char* copyright /* out */
 ){
     return CDFlib(SELECT_, CDF_, id, GET_, CDF_VERSION_, version_, CDF_RELEASE_, release, CDF_COPYRIGHT_, copyright, NULL_);
 }
@@ -1667,12 +1684,12 @@ extern (D) CDFstatus CDFgetDataTypeSize (
 }
 
 //extern (D) auto CDFgetLibraryCopyright(T)(auto ref T copyright)
-/+ Param:
-    Copyright The Copyright notice. This character string must be large enough to hold
-    CDF_COPYRIGHT_LEN + 1 characters (including the NUL terminator).
-+/
+/** Params:
+ *   Copyright = The Copyright notice. Must point to a location large 
+ *               enough to hold at least CDF_COPYRIGHT_LEN + 1 bytes
+ */
 extern (D) CDFstatus CDFgetLibraryCopyright (
-	char *Copyright /* out */
+	char *copyright /* out */
 ){
     return CDFlib(GET_, LIB_COPYRIGHT_, copyright, NULL_);
 }
@@ -1684,13 +1701,16 @@ extern (D) CDFstatus CDFgetLibraryVersion (
 	c_long *increment, /* out */
 	char *subIncrement /* out */
 ){
-    return CDFlib(GET_, LIB_VERSION_, version_, LIB_RELEASE_, release, LIB_INCREMENT_, increment, LIB_subINCREMENT_, subincrement, NULL_);
+    return CDFlib(
+	 	GET_, LIB_VERSION_, version_, LIB_RELEASE_, release, LIB_INCREMENT_, increment,
+		LIB_subINCREMENT_, subIncrement, NULL_
+	);
 }
 
 //extern (D) auto CDFgetVersion(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 version_, auto ref T2 release, auto ref T3 increment)
 extern (D) CDFstatus CDFgetVersion (
 	CDFid id, /* in */
-	c_long *version, /* out */
+	c_long *version_, /* out */
 	c_long *release, /* out */
 	c_long *increment /* out */
 ){
@@ -1716,7 +1736,10 @@ extern (D) CDFstatus CDFgetVarCompression (
 	c_long *cParms, /* out */
 	c_long *cPercent /* out */
 ){
-    return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, GET_, zVar ? zVAR_COMPRESSION_ : rVAR_COMPRESSION_, cType, cParms, cPct, NULL_);
+    return CDFlib(
+	 	SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, GET_, 
+		zVar ? zVAR_COMPRESSION_ : rVAR_COMPRESSION_, cType, cParms, cPercent, NULL_
+	);
 }
 
 //extern (D) auto CDFgetVarData(T0, T1, T2, T3, T4, T5)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 recNum, auto ref T4 indices, auto ref T5 value)
@@ -1756,9 +1779,12 @@ extern (D) CDFstatus CDFgetVarMaxAllocRecNum (
 	CDFid id, /* in */
 	int zVar, /* in */
 	c_long varNum, /* in */
-	c_long *maxRec /* out */
+	c_long *maxAllocRec /* out */
 ){
-    return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, GET_, zVar ? zVAR_MAXallocREC_ : rVAR_MAXallocREC_, maxAllocRec, NULL_);
+    return CDFlib(
+	 	SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, 
+		GET_, zVar ? zVAR_MAXallocREC_ : rVAR_MAXallocREC_, maxAllocRec, NULL_
+	);
 }
 
 //extern (D) auto CDFgetVarMaxWrittenRecNum(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 maxRec)
@@ -1776,9 +1802,12 @@ extern (D) CDFstatus CDFgetVarAllocRecords (
 	CDFid id, /* in */
 	int zVar, /* in */
 	c_long varNum, /* in */
-	c_long *allocRecs /* out */
+	c_long *numAllocRecs /* out */
 ){
-    return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, GET_, zVar ? zVAR_NUMallocRECS_ : rVAR_NUMallocRECS_, numAllocRecs, NULL_);
+    return CDFlib(
+	 	SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, 
+		GET_, zVar ? zVAR_NUMallocRECS_ : rVAR_NUMallocRECS_, numAllocRecs, NULL_
+	);
 }
 
 //extern (D) auto CDFgetVarNumElements(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 numElements)
@@ -1786,108 +1815,281 @@ extern (D) CDFstatus CDFgetVarNumElements (
 	CDFid id, /* in */
 	int zVar, /* in */
 	c_long varNum, /* in */
-	c_long *numElems /* out */
+	c_long *numElements /* out */
 ){
-    return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, GET_, zVar ? zVAR_NUMELEMS_ : rVAR_NUMELEMS_, numElements, NULL_);
+    return CDFlib(
+	 	SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, GET_, 
+		zVar ? zVAR_NUMELEMS_ : rVAR_NUMELEMS_, numElements, NULL_
+	);
 }
 
-extern (D) auto CDFgetVarNumRecsWritten(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 numRecs)
-{
+//extern (D) auto CDFgetVarNumRecsWritten(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 numRecs)
+extern (D) CDFstatus CDFgetVarNumRecsWritten (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	c_long *numRecs /* out */
+){
     return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, GET_, zVar ? zVAR_NUMRECS_ : rVAR_NUMRECS_, numRecs, NULL_);
 }
 
-extern (D) auto CDFgetVarPadValue(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 padValue)
-{
+//extern (D) auto CDFgetVarPadValue(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 padValue)
+extern (D) CDFstatus CDFgetVarPadValue (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	void *padValue /* out */
+){
     return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, GET_, zVar ? zVAR_PADVALUE_ : rVAR_PADVALUE_, padValue, NULL_);
 }
 
-extern (D) auto CDFgetVarRecVariance(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 recVary)
-{
+//extern (D) auto CDFgetVarRecVariance(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 recVary)
+extern (D) CDFstatus CDFgetzVarRecVariance (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	c_long *recVary /* out */
+){
     return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, GET_, zVar ? zVAR_RECVARY_ : rVAR_RECVARY_, recVary, NULL_);
 }
 
-extern (D) auto CDFgetVarSeqData(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 seqData)
-{
-    return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, GET_, zVar ? zVAR_SEQDATA_ : rVAR_SEQDATA_, seqData, NULL_);
+//extern (D) auto CDFgetVarSeqData(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 seqData)
+extern (D) CDFstatus CDFgetVarSeqData (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	void *seqData /* out */
+){
+    return CDFlib(
+	 	SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, 
+		GET_, zVar ? zVAR_SEQDATA_ : rVAR_SEQDATA_, seqData, NULL_
+	);
 }
 
-extern (D) auto CDFgetVarsRecordDatabyNumbers(T0, T1, T2, T3, T4, T5)(auto ref T0 id, auto ref T1 zVar, auto ref T2 numVars, auto ref T3 varNums, auto ref T4 recNum, auto ref T5 buffer)
-{
-    return CDFlib(SELECT_, CDF_, id, zVar ? zVARs_RECNUMBER_ : rVARs_RECNUMBER_, recNum, GET_, zVar ? zVARs_RECDATA_ : rVARs_RECDATA_, numVars, varNums, buffer, NULL_);
+//extern (D) auto CDFgetVarsRecordDatabyNumbers(T0, T1, T2, T3, T4, T5)(auto ref T0 id, auto ref T1 zVar, auto ref T2 numVars, auto ref T3 varNums, auto ref T4 recNum, auto ref T5 buffer)
+extern (D) CDFstatus CDFgetVarsRecordDatabyNumbers (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long numVars, /* in */
+	const c_long *varNums, /* in */
+	c_long varRecNum, /* in */
+	void *buffer /* out */
+){
+    return CDFlib(
+	 	SELECT_, CDF_, id, zVar ? zVARs_RECNUMBER_ : rVARs_RECNUMBER_, varRecNum, 
+		GET_, zVar ? zVARs_RECDATA_ : rVARs_RECDATA_, numVars, varNums, buffer, NULL_
+	);
 }
 
-extern (D) auto CDFgetVarSparseRecords(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 sparseRecs)
-{
-    return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, GET_, zVar ? zVAR_SPARSERECORDS_ : rVAR_SPARSERECORDS_, sparseRecs, NULL_);
+//extern (D) auto CDFgetVarSparseRecords(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 sparseRecs)
+extern (D) CDFstatus CDFgetVarSparseRecords (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	c_long *sparseRecs /* out */
+){
+    return CDFlib(
+	 	SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, 
+		GET_, zVar ? zVAR_SPARSERECORDS_ : rVAR_SPARSERECORDS_, sparseRecs, NULL_
+	);
 }
 
-extern (D) auto CDFgetrVarsDimSizes(T0, T1)(auto ref T0 id, auto ref T1 dimSizes)
-{
+//extern (D) auto CDFgetrVarsDimSizes(T0, T1)(auto ref T0 id, auto ref T1 dimSizes)
+/**
+ * Params:
+ *   dimSizes should be an array of size CDF_MAX_DIMS
+ */
+extern (D) CDFstatus CDFgetrVarsDimSizes(
+	CDFid id, /* in */
+	c_long *dimSizes, /* out */
+){
     return CDFlib(SELECT_, CDF_, id, GET_, rVARs_DIMSIZES_, dimSizes, NULL_);
 }
 
-extern (D) auto CDFgetzVarDimSizes(T0, T1, T2)(auto ref T0 id, auto ref T1 varNum, auto ref T2 dimSizes)
-{
+//extern (D) auto CDFgetzVarDimSizes(T0, T1, T2)(auto ref T0 id, auto ref T1 varNum, auto ref T2 dimSizes)
+extern (D) CDFstatus CDFgetzVarDimSizes (
+	CDFid id, /* in */
+	c_long varNum, /* in */
+	c_long *dimSizes /* out */
+){
     return CDFlib(SELECT_, CDF_, id, zVAR_, varNum, GET_, zVAR_DIMSIZES_, dimSizes, NULL_);
 }
 
-extern (D) auto CDFgetVarName(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 varName)
-{
+//extern (D) auto CDFgetVarName(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 varName)
+extern (D) CDFstatus CDFgetVarName (
+	CDFid id, /* in */
+	int zVar, /* in */	
+	c_long varNum, /* in */
+	char *varName /* out */
+){
     return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, GET_, zVar ? zVAR_NAME_ : rVAR_NAME_, varName, NULL_);
 }
 
-extern (D) auto CDFgetzVarNumDims(T0, T1, T2)(auto ref T0 id, auto ref T1 varNum, auto ref T2 numDims)
-{
+//extern (D) auto CDFgetzVarNumDims(T0, T1, T2)(auto ref T0 id, auto ref T1 varNum, auto ref T2 numDims)
+extern (D) CDFstatus CDFgetzVarNumDims (
+	CDFid id, /* in */
+	c_long varNum, /* in */
+	c_long *numDims /* out */
+){
     return CDFlib(SELECT_, CDF_, id, zVAR_, varNum, GET_, zVAR_NUMDIMS_, numDims, NULL_);
 }
 
-extern (D) auto CDFgetrVarsNumDims(T0, T1)(auto ref T0 id, auto ref T1 numDims)
-{
+//extern (D) auto CDFgetrVarsNumDims(T0, T1)(auto ref T0 id, auto ref T1 numDims)
+extern (D) auto CDFgetrVarsNumDims(
+	CDFid id, /* in */
+	c_long *numDims /* out */
+){
     return CDFlib(SELECT_, CDF_, id, GET_, rVARs_NUMDIMS_, numDims, NULL_);
 }
 
-extern (D) auto CDFgetStatusText(T0, T1)(auto ref T0 status, auto ref T1 text)
-{
+//extern (D) auto CDFgetStatusText(T0, T1)(auto ref T0 status, auto ref T1 text)
+/** 
+ * Params:
+ *   text = Pointer a buffer of at least  CDF_STATUSTEXT_LEN + 1 bytes
+ */
+extern (D) CDFstatus CDFgetStatusText (
+	CDFstatus status, /* in */
+	char *text /* out */
+){
     return CDFlib(SELECT_, CDF_STATUS_, status, GET_, STATUS_TEXT_, text, NULL_);
 }
 
-extern (D) auto CDFhyperGetVarData(T0, T1, T2, T3, T4, T5, T6, T7, T8, T9)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varN, auto ref T3 recS, auto ref T4 recC, auto ref T5 recI, auto ref T6 indices, auto ref T7 counts, auto ref T8 intervals, auto ref T9 buff)
-{
-    return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varN, zVar ? zVAR_RECNUMBER_ : rVARs_RECNUMBER_, recS, zVar ? zVAR_RECCOUNT_ : rVARs_RECCOUNT_, recC, zVar ? zVAR_RECINTERVAL_ : rVARs_RECINTERVAL_, recI, zVar ? zVAR_DIMINDICES_ : rVARs_DIMINDICES_, indices, zVar ? zVAR_DIMCOUNTS_ : rVARs_DIMCOUNTS_, counts, zVar ? zVAR_DIMINTERVALS_ : rVARs_DIMINTERVALS_, intervals, GET_, zVar ? zVAR_HYPERDATA_ : rVAR_HYPERDATA_, buff, NULL_);
+//extern (D) auto CDFhyperGetVarData(T0, T1, T2, T3, T4, T5, T6, T7, T8, T9)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varN, auto ref T3 recS, auto ref T4 recC, auto ref T5 recI, auto ref T6 indices, auto ref T7 counts, auto ref T8 intervals, auto ref T9 buff)
+/** Most important read function 
+ */
+extern (D) CDFstatus CDFhyperGetVarData (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	c_long recNum, /* in */
+	c_long recCount, /* in */
+	c_long recInterval, /* in */
+	const c_long *indices, /* in */
+	const c_long *counts, /* in */
+	c_long* intervals, /* in */
+	void *buffer /* out */
+){
+    return CDFlib(
+	 	SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum,
+		zVar ? zVAR_RECNUMBER_ : rVARs_RECNUMBER_, recNum, 
+		zVar ? zVAR_RECCOUNT_ : rVARs_RECCOUNT_, recCount, 
+		zVar ? zVAR_RECINTERVAL_ : rVARs_RECINTERVAL_, recInterval, 
+		zVar ? zVAR_DIMINDICES_ : rVARs_DIMINDICES_, indices, 
+		zVar ? zVAR_DIMCOUNTS_ : rVARs_DIMCOUNTS_, counts,
+		zVar ? zVAR_DIMINTERVALS_ : rVARs_DIMINTERVALS_, intervals, 
+		GET_, zVar ? zVAR_HYPERDATA_ : rVAR_HYPERDATA_, buffer, NULL_
+	);
 }
 
-extern (D) auto CDFgetMaxWrittenRecNums(T0, T1, T2)(auto ref T0 id, auto ref T1 maxRecrVars, auto ref T2 maxReczVars)
-{
+//extern (D) auto CDFgetMaxWrittenRecNums(T0, T1, T2)(auto ref T0 id, auto ref T1 maxRecrVars, auto ref T2 maxReczVars)
+extern (D) CDFstatus CDFgetMaxWrittenRecNums (
+	CDFid id, /* in */
+	c_long *maxRecrVars, /* out */
+	c_long *maxReczVars /* out */
+){
     return CDFlib(SELECT_, CDF_, id, GET_, rVARs_MAXREC_, maxRecrVars, zVARs_MAXREC_, maxReczVars, NULL_);
 }
 
-extern (D) auto CDFgetVarsMaxWrittenRecNum(T0, T1, T2)(auto ref T0 id, auto ref T1 zVar, auto ref T2 maxRecVar)
-{
+//extern (D) auto CDFgetVarsMaxWrittenRecNum(T0, T1, T2)(auto ref T0 id, auto ref T1 zVar, auto ref T2 maxRecVar)
+extern (D) CDFstatus CDFgetVarsMaxWrittenRecNum (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long *maxRecVar /* out */
+){
     return CDFlib(SELECT_, CDF_, id, GET_, zVar ? zVARs_MAXREC_ : rVARs_MAXREC_, maxRecVar, NULL_);
 }
 
-extern (D) auto CDFinquireVar(T0, T1, T2, T3, T4, T5, T6, T7, T8, T9)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varN, auto ref T3 varName, auto ref T4 dataType, auto ref T5 numElements, auto ref T6 numDims, auto ref T7 dimSizes, auto ref T8 recVary, auto ref T9 dimVarys)
-{
-    return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varN, GET_, zVar ? zVAR_NAME_ : rVAR_NAME_, varName, zVar ? zVAR_DATATYPE_ : rVAR_DATATYPE_, dataType, zVar ? zVAR_NUMELEMS_ : rVAR_NUMELEMS_, numElements, zVar ? zVAR_NUMDIMS_ : rVARs_NUMDIMS_, numDims, zVar ? zVAR_DIMSIZES_ : rVARs_DIMSIZES_, dimSizes, zVar ? zVAR_RECVARY_ : rVAR_RECVARY_, recVary, zVar ? zVAR_DIMVARYS_ : rVAR_DIMVARYS_, dimVarys, NULL_);
+//extern (D) auto CDFinquireVar(T0, T1, T2, T3, T4, T5, T6, T7, T8, T9)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varN, auto ref T3 varName, auto ref T4 dataType, auto ref T5 numElements, auto ref T6 numDims, auto ref T7 dimSizes, auto ref T8 recVary, auto ref T9 dimVarys)
+extern (D) CDFstatus CDFinquirezVar (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	char *varName, /* out */
+	c_long *dataType, /* out */
+	c_long *numElements, /* out */
+	c_long *numDims, /* out */
+	c_long *dimSizes, /* out */
+	c_long *recVary, /* out */
+	c_long *dimVarys /* out */
+){
+    return CDFlib(
+	 	SELECT_, CDF_, id, 
+		zVar ? zVAR_ : rVAR_, varNum, GET_, 
+		zVar ? zVAR_NAME_ : rVAR_NAME_, varName, 
+		zVar ? zVAR_DATATYPE_ : rVAR_DATATYPE_, dataType, 
+		zVar ? zVAR_NUMELEMS_ : rVAR_NUMELEMS_, numElements,
+		zVar ? zVAR_NUMDIMS_ : rVARs_NUMDIMS_, numDims,
+		zVar ? zVAR_DIMSIZES_ : rVARs_DIMSIZES_, dimSizes,
+		zVar ? zVAR_RECVARY_ : rVAR_RECVARY_, recVary,
+		zVar ? zVAR_DIMVARYS_ : rVAR_DIMVARYS_, dimVarys, NULL_
+	);
 }
 
-extern (D) auto CDFvarInquire(T0, T1, T2, T3, T4, T5, T6)(auto ref T0 id, auto ref T1 varN, auto ref T2 varName, auto ref T3 dataType, auto ref T4 numElements, auto ref T5 recVary, auto ref T6 dimVarys)
-{
-    return CDFlib(SELECT_, CDF_, id, rVAR_, varN, GET_, rVAR_NAME_, varName, rVAR_DATATYPE_, dataType, rVAR_NUMELEMS_, numElements, rVAR_RECVARY_, recVary, rVAR_DIMVARYS_, dimVarys, NULL_);
+//extern (D) auto CDFvarInquire(T0, T1, T2, T3, T4, T5, T6)(auto ref T0 id, auto ref T1 varN, auto ref T2 varName, auto ref T3 dataType, auto ref T4 numElements, auto ref T5 recVary, auto ref T6 dimVarys)
+extern (D) CDFstatus CDFvarInquire (
+	CDFid id, /* in */
+	c_long varNum, /* in */
+	char *varName, /* out */
+	c_long *dataType, /* out */
+	c_long *numElements, /* out */
+	c_long *recVary, /* out */
+	c_long *dimVarys /* out */
+){
+	return CDFlib(
+		SELECT_, CDF_, id, rVAR_, varNum, GET_, rVAR_NAME_, varName, 
+		rVAR_DATATYPE_, dataType, rVAR_NUMELEMS_, numElements, rVAR_RECVARY_, recVary,
+		rVAR_DIMVARYS_, dimVarys, NULL_
+	);
 }
 
-extern (D) auto CDFinquire(T0, T1, T2, T3, T4, T5, T6, T7)(auto ref T0 id, auto ref T1 numDims, auto ref T2 dimSizes, auto ref T3 encoding, auto ref T4 majority, auto ref T5 maxRec, auto ref T6 nVars, auto ref T7 nAttrs)
-{
-    return CDFlib(SELECT_, CDF_, id, GET_, rVARs_NUMDIMS_, numDims, rVARs_DIMSIZES_, dimSizes, CDF_ENCODING_, encoding, CDF_MAJORITY_, majority, rVARs_MAXREC_, maxRec, CDF_NUMrVARS_, nVars, CDF_NUMATTRS_, nAttrs, NULL_);
+//extern (D) auto CDFinquire(T0, T1, T2, T3, T4, T5, T6, T7)(auto ref T0 id, auto ref T1 numDims, auto ref T2 dimSizes, auto ref T3 encoding, auto ref T4 majority, auto ref T5 maxRec, auto ref T6 nVars, auto ref T7 nAttrs)
+/**
+ * Params:
+ *  dimSizes = Pointer to array of size CDF_MAX_DIMS
+ */
+extern (D) CDFstatus CDFinquire (
+	CDFid id, /* in */
+	c_long *numDims, /* out */
+	c_long *dimSizes, /* out */
+	c_long *encoding, /* out */
+	c_long *majority, /* out */
+	c_long *maxRec, /* out */
+	c_long *numVars, /* out */
+	c_long *numAttrs /* out */
+){
+    return CDFlib(
+	 	SELECT_, CDF_, id, GET_, rVARs_NUMDIMS_, numDims, rVARs_DIMSIZES_, dimSizes,
+		CDF_ENCODING_, encoding, CDF_MAJORITY_, majority, rVARs_MAXREC_, maxRec, 
+		CDF_NUMrVARS_, numVars, CDF_NUMATTRS_, numAttrs, NULL_
+	);
 }
 
-extern (D) auto CDFinquireCDF(T0, T1, T2, T3, T4, T5, T6, T7, T8, T9)(auto ref T0 id, auto ref T1 numDims, auto ref T2 dimSizes, auto ref T3 encoding, auto ref T4 majority, auto ref T5 maxrRec, auto ref T6 nrVars, auto ref T7 maxzRec, auto ref T8 nzVars, auto ref T9 nAttrs)
-{
-    return CDFlib(SELECT_, CDF_, id, GET_, rVARs_NUMDIMS_, numDims, rVARs_DIMSIZES_, dimSizes, CDF_ENCODING_, encoding, CDF_MAJORITY_, majority, rVARs_MAXREC_, maxrRec, CDF_NUMrVARS_, nrVars, zVARs_MAXREC_, maxzRec, CDF_NUMzVARS_, nzVars, CDF_NUMATTRS_, nAttrs, NULL_);
+//extern (D) auto CDFinquireCDF(T0, T1, T2, T3, T4, T5, T6, T7, T8, T9)(auto ref T0 id, auto ref T1 numDims, auto ref T2 dimSizes, auto ref T3 encoding, auto ref T4 majority, auto ref T5 maxrRec, auto ref T6 nrVars, auto ref T7 maxzRec, auto ref T8 nzVars, auto ref T9 nAttrs)
+extern (D) CDFstatus CDFinquireCDF (
+	CDFid id, /* in */
+	c_long *numDims, /* out */
+	c_long *dimSizes, /* out */
+	c_long *encoding, /* out */
+	c_long *majority, /* out */
+	c_long *maxrRec, /* out */
+	c_long *numrVars, /* out */
+	c_long *maxzRec, /* out */
+	c_long *numzVars, /* out */
+	c_long *numAttrs /* out */
+){
+    return CDFlib(
+	 	SELECT_, CDF_, id, GET_, rVARs_NUMDIMS_, numDims, rVARs_DIMSIZES_, dimSizes,
+		CDF_ENCODING_, encoding, CDF_MAJORITY_, majority, rVARs_MAXREC_, maxrRec,
+		CDF_NUMrVARS_, numrVars, zVARs_MAXREC_, maxzRec, CDF_NUMzVARS_, numzVars,
+		CDF_NUMATTRS_, numAttrs, NULL_
+	);
 }
 
-extern (D) auto CDFgetChecksum(T0, T1)(auto ref T0 id, auto ref T1 checksum)
-{
+//extern (D) auto CDFgetChecksum(T0, T1)(auto ref T0 id, auto ref T1 checksum)
+extern (D) CDFstatus CDFgetChecksum (
+	CDFid id, /* in */
+	c_long *checksum /* out */
+){
     return CDFlib(SELECT_, CDF_, id, GET_, CDF_CHECKSUM_, checksum, NULL_);
 }
 
@@ -1895,8 +2097,11 @@ extern (D) auto CDFgetChecksum(T0, T1)(auto ref T0 id, auto ref T1 checksum)
  * OPEN_ *
  *       */
 
-extern (D) auto CDFopen(T0, T1)(auto ref T0 CDFname, auto ref T1 id)
-{
+//extern (D) auto CDFopen(T0, T1)(auto ref T0 CDFname, auto ref T1 id)
+extern (D) CDFstatus CDFopen (
+	const char *CDFname, /* in */
+	CDFid *id /* out */
+){
     return CDFlib(OPEN_, CDF_, CDFname, id, NULL_);
 }
 
@@ -1904,118 +2109,268 @@ extern (D) auto CDFopen(T0, T1)(auto ref T0 CDFname, auto ref T1 id)
  * PUT_ *
  *      */
 
-extern (D) auto CDFsetAttrScope(T0, T1, T2)(auto ref T0 id, auto ref T1 attrNum, auto ref T2 attrScope)
-{
+//extern (D) auto CDFsetAttrScope(T0, T1, T2)(auto ref T0 id, auto ref T1 attrNum, auto ref T2 attrScope)
+extern (D) CDFstatus CDFsetAttrScope (
+	CDFid id, /* in */
+	c_long attrNum, /* in */
+	c_long attrScope /* in */
+){
     return CDFlib(SELECT_, CDF_, id, ATTR_, attrNum, PUT_, ATTR_SCOPE_, attrScope, NULL_);
 }
 
-extern (D) auto CDFsetCompression(T0, T1, T2)(auto ref T0 id, auto ref T1 cType, auto ref T2 cParms)
-{
-    return CDFlib(SELECT_, CDF_, id, PUT_, CDF_COMPRESSION_, cType, cParms, NULL_);
+//extern (D) auto CDFsetCompression(T0, T1, T2)(auto ref T0 id, auto ref T1 cType, auto ref T2 cParms)
+extern (D) CDFstatus CDFsetCompression (
+	CDFid id, /* in */
+	c_long compressionType, /* in */
+	c_long *compressionParms /* in */
+){
+    return CDFlib(SELECT_, CDF_, id, PUT_, CDF_COMPRESSION_, compressionType, compressionParms, NULL_);
 }
 
-extern (D) auto CDFsetEncoding(T0, T1)(auto ref T0 id, auto ref T1 encoding)
-{
+//extern (D) auto CDFsetEncoding(T0, T1)(auto ref T0 id, auto ref T1 encoding)
+extern (D) CDFstatus CDFsetEncoding (
+	CDFid id, /* in */
+	c_long encoding /* in */
+){
     return CDFlib(SELECT_, CDF_, id, PUT_, CDF_ENCODING_, encoding, NULL_);
 }
 
-extern (D) auto CDFsetFormat(T0, T1)(auto ref T0 id, auto ref T1 format)
-{
+//extern (D) auto CDFsetFormat(T0, T1)(auto ref T0 id, auto ref T1 format)
+extern (D) CDFstatus CDFsetFormat (
+	CDFid id, /* in */
+	c_long format /* in */
+){
     return CDFlib(SELECT_, CDF_, id, PUT_, CDF_FORMAT_, format, NULL_);
 }
 
-extern (D) auto CDFsetLeapSecondLastUpdated(T0, T1)(auto ref T0 id, auto ref T1 lastUpdated)
-{
+//extern (D) auto CDFsetLeapSecondLastUpdated(T0, T1)(auto ref T0 id, auto ref T1 lastUpdated)
+extern (D) CDFstatus CDFsetLeapSecondLastUpdated (
+	CDFid id, /* in */
+	c_long lastUpdated /* in */
+){
     return CDFlib(SELECT_, CDF_, id, PUT_, CDF_LEAPSECONDLASTUPDATED_, lastUpdated, NULL_);
 }
 
-extern (D) auto CDFsetMajority(T0, T1)(auto ref T0 id, auto ref T1 majority)
-{
+//extern (D) auto CDFsetMajority(T0, T1)(auto ref T0 id, auto ref T1 majority)
+extern (D) CDFstatus CDFsetMajority (
+	CDFid id, /* in */
+	c_long majority /* in */
+){
     return CDFlib(SELECT_, CDF_, id, PUT_, CDF_MAJORITY_, majority, NULL_);
 }
 
-extern (D) auto CDFrenameAttr(T0, T1, T2)(auto ref T0 id, auto ref T1 attrNum, auto ref T2 attrName)
-{
+//extern (D) auto CDFrenameAttr(T0, T1, T2)(auto ref T0 id, auto ref T1 attrNum, auto ref T2 attrName)
+extern (D) CDFstatus CDFrenameAttr (
+	CDFid id, /* in */
+	c_long attrNum, /* in */
+	const char *attrName /* in */
+){
     return CDFlib(SELECT_, CDF_, id, ATTR_, attrNum, PUT_, ATTR_NAME_, attrName, NULL_);
 }
 
-extern (D) auto CDFrenameVar(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 varName)
-{
+//extern (D) auto CDFrenameVar(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 varName)
+extern (D) CDFstatus CDFrenameVar (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	const char *varName /* in */
+){
     return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, PUT_, zVar ? zVAR_NAME_ : rVAR_NAME_, varName, NULL_);
 }
 
-extern (D) auto CDFsetVarAllocRecords(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 allocRecs)
-{
-    return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, PUT_, zVar ? zVAR_ALLOCATERECS_ : rVAR_ALLOCATERECS_, allocRecs, NULL_);
+//extern (D) auto CDFsetVarAllocRecords(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 allocRecs)
+extern (D) CDFstatus CDFsetVarAllocRecords (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	c_long numRecs /* in */
+){
+    return CDFlib(
+	 	SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, PUT_,
+		zVar ? zVAR_ALLOCATERECS_ : rVAR_ALLOCATERECS_, numRecs, NULL_
+	);
 }
 
-extern (D) auto CDFsetVarAllocBlockRecords(T0, T1, T2, T3, T4)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 firstRec, auto ref T4 lastRec)
-{
+//extern (D) auto CDFsetVarAllocBlockRecords(T0, T1, T2, T3, T4)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 firstRec, auto ref T4 lastRec)
+extern (D) CDFstatus CDFsetVarAllocBlockRecords (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	c_long firstRec, /* in */
+	c_long lastRec /* in */
+){
     return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, PUT_, zVar ? zVAR_ALLOCATEBLOCK_ : rVAR_ALLOCATEBLOCK_, firstRec, lastRec, NULL_);
 }
 
-extern (D) auto CDFsetVarBlockingFactor(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 bf)
-{
+//extern (D) auto CDFsetVarBlockingFactor(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 bf)
+extern (D) CDFstatus CDFsetVarBlockingFactor (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	c_long bf /* in */
+){
     return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, PUT_, zVar ? zVAR_BLOCKINGFACTOR_ : rVAR_BLOCKINGFACTOR_, bf, NULL_);
 }
 
-extern (D) auto CDFsetVarCompression(T0, T1, T2, T3, T4)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 cType, auto ref T4 cParms)
-{
-    return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, PUT_, zVar ? zVAR_COMPRESSION_ : rVAR_COMPRESSION_, cType, cParms, NULL_);
+//extern (D) auto CDFsetVarCompression(T0, T1, T2, T3, T4)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 cType, auto ref T4 cParms)
+extern (D) CDFstatus CDFsetVarCompression (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	c_long compressionType, /* in */
+	const c_long *compressionParms /* in */
+){
+    return CDFlib(
+	 	SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, PUT_,
+		zVar ? zVAR_COMPRESSION_ : rVAR_COMPRESSION_, compressionType, compressionParms, NULL_
+	);
 }
 
-extern (D) auto CDFsetVarDataSpec(T0, T1, T2, T3, T4)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 dataType, auto ref T4 numElems)
-{
-    return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, PUT_, zVar ? zVAR_DATASPEC_ : rVAR_DATASPEC_, dataType, numElems, NULL_);
+//extern (D) auto CDFsetVarDataSpec(T0, T1, T2, T3, T4)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 dataType, auto ref T4 numElems)
+extern (D) CDFstatus CDFsetVarDataSpec (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	c_long dataType, /* in */
+	c_long numElems
+){
+    return CDFlib(
+	 	SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, PUT_,
+		zVar ? zVAR_DATASPEC_ : rVAR_DATASPEC_, dataType, numElems, NULL_
+	);
 }
 
-extern (D) auto CDFsetVarDimVariances(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 dimVarys)
-{
+//extern (D) auto CDFsetVarDimVariances(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 dimVarys)
+extern (D) CDFstatus CDFsetVarDimVariances (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	const c_long *dimVarys /* in */
+){
     return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, PUT_, zVar ? zVAR_DIMVARYS_ : rVAR_DIMVARYS_, dimVarys, NULL_);
 }
 
-extern (D) auto CDFsetVarInitialRecs(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 numRecs)
-{
-    return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, PUT_, zVar ? zVAR_INITIALRECS_ : rVAR_INITIALRECS_, numRecs, NULL_);
+//extern (D) auto CDFsetVarInitialRecs(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 numRecs)
+extern (D) CDFstatus CDFsetVarInitialRecs (
+	CDFid id, /* in */
+	int zVar, /* in */	
+	c_long varNum, /* in */
+	c_long initialRecs /* in */
+){
+    return CDFlib(
+	 	SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, PUT_, 
+		zVar ? zVAR_INITIALRECS_ : rVAR_INITIALRECS_, initialRecs, NULL_
+	);
 }
 
-extern (D) auto CDFsetVarPadValue(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 padValue)
-{
+//extern (D) auto CDFsetVarPadValue(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 padValue)
+extern (D) CDFstatus CDFsetVarPadValue (
+	CDFid id, /* in */
+	int zVar, /* in */	
+	c_long varNum, /* in */
+	const void *padValue /* in */
+){
     return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, PUT_, zVar ? zVAR_PADVALUE_ : rVAR_PADVALUE_, padValue, NULL_);
 }
 
-extern (D) auto CDFsetVarRecVariance(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 recVary)
-{
+//extern (D) auto CDFsetVarRecVariance(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 recVary)
+extern (D) CDFstatus CDFsetVarRecVariance (
+	CDFid id, /* in */
+	int zVar, /* in */	
+	c_long varNum, /* in */
+	c_long recVary /* in */
+){
     return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, PUT_, zVar ? zVAR_RECVARY_ : rVAR_RECVARY_, recVary, NULL_);
 }
 
-extern (D) auto CDFputVarSeqData(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 seqData)
-{
+//extern (D) auto CDFputVarSeqData(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 seqData)
+extern (D) CDFstatus CDFputVarSeqData (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	const void *seqData /* in */
+){
     return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, PUT_, zVar ? zVAR_SEQDATA_ : rVAR_SEQDATA_, seqData, NULL_);
 }
 
-extern (D) auto CDFsetVarSparseRecords(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 sparseRecs)
-{
-    return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, PUT_, zVar ? zVAR_SPARSERECORDS_ : rVAR_SPARSERECORDS_, sparseRecs, NULL_);
+//extern (D) auto CDFsetVarSparseRecords(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 sparseRecs)
+extern (D) CDFstatus CDFsetVarSparseRecords (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	c_long sparseRecs /* in */
+){
+    return CDFlib(
+	 	SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, PUT_,
+		zVar ? zVAR_SPARSERECORDS_ : rVAR_SPARSERECORDS_, sparseRecs, NULL_
+	);
 }
 
-extern (D) auto CDFputVarData(T0, T1, T2, T3, T4, T5)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 recNum, auto ref T4 indices, auto ref T5 value)
-{
-    return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, zVar ? zVAR_RECNUMBER_ : rVARs_RECNUMBER_, recNum, zVar ? zVAR_DIMINDICES_ : rVARs_DIMINDICES_, indices, PUT_, zVar ? zVAR_DATA_ : rVAR_DATA_, value, NULL_);
+//extern (D) auto CDFputVarData(T0, T1, T2, T3, T4, T5)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 recNum, auto ref T4 indices, auto ref T5 value)
+extern (D) CDFstatus CDFputVarData (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	c_long recNum, /* in */
+	c_long *indices, /* in */
+	const void *value /* in */
+){
+    return CDFlib(
+	 	SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum,
+		zVar ? zVAR_RECNUMBER_ : rVARs_RECNUMBER_, recNum,
+		zVar ? zVAR_DIMINDICES_ : rVARs_DIMINDICES_, indices,
+		PUT_, zVar ? zVAR_DATA_ : rVAR_DATA_, value, NULL_
+	);
 }
 
-extern (D) auto CDFputVarsRecordDatabyNumbers(T0, T1, T2, T3, T4, T5)(auto ref T0 id, auto ref T1 zVar, auto ref T2 numVars, auto ref T3 varNums, auto ref T4 recNum, auto ref T5 buffer)
-{
-    return CDFlib(SELECT_, CDF_, id, zVar ? zVARs_RECNUMBER_ : rVARs_RECNUMBER_, recNum, PUT_, zVar ? zVARs_RECDATA_ : rVARs_RECDATA_, numVars, varNums, buffer, NULL_);
+//extern (D) auto CDFputVarsRecordDatabyNumbers(T0, T1, T2, T3, T4, T5)(auto ref T0 id, auto ref T1 zVar, auto ref T2 numVars, auto ref T3 varNums, auto ref T4 recNum, auto ref T5 buffer)
+extern (D) CDFstatus CDFputVarsRecordDatabyNumbers (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long numVars, /* in */
+	c_long *varNums, /* in */
+	c_long varRecNum, /* in */
+	const void *buffer /* in */
+){
+    return CDFlib(
+	 	SELECT_, CDF_, id, zVar ? zVARs_RECNUMBER_ : rVARs_RECNUMBER_, varRecNum, 
+		PUT_, zVar ? zVARs_RECDATA_ : rVARs_RECDATA_, numVars, varNums, buffer, NULL_
+	);
 }
 
-extern (D) auto CDFhyperPutVarData(T0, T1, T2, T3, T4, T5, T6, T7, T8, T9)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varN, auto ref T3 recS, auto ref T4 recC, auto ref T5 recI, auto ref T6 indices, auto ref T7 counts, auto ref T8 intervals, auto ref T9 buff)
-{
-    return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varN, zVar ? zVAR_RECNUMBER_ : rVARs_RECNUMBER_, recS, zVar ? zVAR_RECCOUNT_ : rVARs_RECCOUNT_, recC, zVar ? zVAR_RECINTERVAL_ : rVARs_RECINTERVAL_, recI, zVar ? zVAR_DIMINDICES_ : rVARs_DIMINDICES_, indices, zVar ? zVAR_DIMCOUNTS_ : rVARs_DIMCOUNTS_, counts, zVar ? zVAR_DIMINTERVALS_ : rVARs_DIMINTERVALS_, intervals, PUT_, zVar ? zVAR_HYPERDATA_ : rVAR_HYPERDATA_, buff, NULL_);
+//extern (D) auto CDFhyperPutVarData(T0, T1, T2, T3, T4, T5, T6, T7, T8, T9)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varN, auto ref T3 recS, auto ref T4 recC, auto ref T5 recI, auto ref T6 indices, auto ref T7 counts, auto ref T8 intervals, auto ref T9 buff)
+/** One of the two most useful functions it the library
+ */
+extern (D) CDFstatus CDFhyperPutVarData (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	c_long recNum, /* in */
+	c_long recCount, /* in */
+	c_long recInterval, /* in */
+	c_long *indices, /* in */
+	c_long *counts, /* in */
+	c_long *intervals, /* in */
+	const void *buffer /* in */
+){
+    return CDFlib(
+	 	SELECT_, CDF_, id, 
+		zVar ? zVAR_ : rVAR_, varNum, 
+		zVar ? zVAR_RECNUMBER_ : rVARs_RECNUMBER_, recNum, 
+		zVar ? zVAR_RECCOUNT_ : rVARs_RECCOUNT_, recCount,
+		zVar ? zVAR_RECINTERVAL_ : rVARs_RECINTERVAL_, recInterval,
+		zVar ? zVAR_DIMINDICES_ : rVARs_DIMINDICES_, indices,
+		zVar ? zVAR_DIMCOUNTS_ : rVARs_DIMCOUNTS_, counts,
+		zVar ? zVAR_DIMINTERVALS_ : rVARs_DIMINTERVALS_, intervals,
+		PUT_, zVar ? zVAR_HYPERDATA_ : rVAR_HYPERDATA_, buffer, NULL_
+	);
 }
 
-extern (D) auto CDFsetChecksum(T0, T1)(auto ref T0 id, auto ref T1 checksum)
-{
+//extern (D) auto CDFsetChecksum(T0, T1)(auto ref T0 id, auto ref T1 checksum)
+extern (D) CDFstatus CDFsetChecksum (
+	CDFid id, /* in */
+	c_long checksum /* in */
+){
     return CDFlib(SELECT_, CDF_, id, PUT_, CDF_CHECKSUM_, checksum, NULL_);
 }
 
@@ -2023,63 +2378,110 @@ extern (D) auto CDFsetChecksum(T0, T1)(auto ref T0 id, auto ref T1 checksum)
  * SELECT_ *
  *         */
 
-extern (D) auto CDFselect(T)(auto ref T id)
-{
+//extern (D) auto CDFselect(T)(auto ref T id)
+extern (D) CDFstatus CDFselect(
+	CDFid id, /* in */
+){
     return CDFlib(SELECT_, CDF_, id, NULL_);
 }
 
-extern (D) auto CDFsetDecoding(T0, T1)(auto ref T0 id, auto ref T1 decoding)
-{
+//extern (D) auto CDFsetDecoding(T0, T1)(auto ref T0 id, auto ref T1 decoding)
+extern (D) CDFstatus CDFsetDecoding (
+	CDFid id, /* in */
+	c_long decoding /* in */
+){
     return CDFlib(SELECT_, CDF_, id, CDF_DECODING_, decoding, NULL_);
 }
 
-extern (D) auto CDFsetCacheSize(T0, T1)(auto ref T0 id, auto ref T1 numBuffers)
-{
+//extern (D) auto CDFsetCacheSize(T0, T1)(auto ref T0 id, auto ref T1 numBuffers)
+extern (D) CDFstatus CDFsetCacheSize (
+	CDFid id, /* in */
+	c_long numBuffers /* in */
+){
     return CDFlib(SELECT_, CDF_, id, CDF_CACHESIZE_, numBuffers, NULL_);
 }
 
-extern (D) auto CDFsetVarCacheSize(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 numBuffers)
-{
+//extern (D) auto CDFsetVarCacheSize(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 numBuffers)
+extern (D) CDFstatus CDFsetVarCacheSize (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	c_long numBuffers /* in */
+){
     return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, zVar ? zVAR_CACHESIZE_ : rVAR_CACHESIZE_, numBuffers, NULL_);
 }
 
-extern (D) auto CDFsetVarsCacheSize(T0, T1, T2)(auto ref T0 id, auto ref T1 zVar, auto ref T2 numBuffers)
-{
+//extern (D) auto CDFsetVarsCacheSize(T0, T1, T2)(auto ref T0 id, auto ref T1 zVar, auto ref T2 numBuffers)
+extern (D) CDFstatus CDFsetVarsCacheSize (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long numBuffers /* in */
+){
     return CDFlib(SELECT_, CDF_, id, zVar ? zVARs_CACHESIZE_ : rVARs_CACHESIZE_, numBuffers, NULL_);
 }
 
-extern (D) auto CDFsetVarSeqPos(T0, T1, T2, T3, T4)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 recNum, auto ref T4 indices)
-{
+//extern (D) auto CDFsetVarSeqPos(T0, T1, T2, T3, T4)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 recNum, auto ref T4 indices)
+extern (D) CDFstatus CDFsetVarSeqPos (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	c_long recNum, /* in */
+	c_long *indices /* in */
+){
     return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, zVar ? zVAR_SEQPOS_ : rVAR_SEQPOS_, recNum, indices, NULL_);
 }
 
-extern (D) auto CDFsetNegtoPosfp0Mode(T0, T1)(auto ref T0 id, auto ref T1 negtoPosfp0)
-{
+//extern (D) auto CDFsetNegtoPosfp0Mode(T0, T1)(auto ref T0 id, auto ref T1 negtoPosfp0)
+extern (D) CDFstatus CDFsetNegtoPosfp0Mode (
+	CDFid id, /* in */
+	c_long negtoPosfp0 /* in */
+){
     return CDFlib(SELECT_, CDF_, id, CDF_NEGtoPOSfp0_MODE_, negtoPosfp0, NULL_);
 }
 
-extern (D) auto CDFsetReadOnlyMode(T0, T1)(auto ref T0 id, auto ref T1 readOnlyMode)
-{
+//extern (D) auto CDFsetReadOnlyMode(T0, T1)(auto ref T0 id, auto ref T1 readOnlyMode)
+extern (D) CDFstatus CDFsetReadOnlyMode (
+	CDFid id, /* in */
+	c_long readOnlyMode /* in */
+){
     return CDFlib(SELECT_, CDF_, id, CDF_READONLY_MODE_, readOnlyMode, NULL_);
 }
 
-extern (D) auto CDFsetVarReservePercent(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 percent)
-{
-    return CDFlib(SELECT_, CDF_, id, zVar ? zVAR_ : rVAR_, varNum, zVar ? zVAR_RESERVEPERCENT_ : rVAR_RESERVEPERCENT_, percent, NULL_);
+//extern (D) auto CDFsetVarReservePercent(T0, T1, T2, T3)(auto ref T0 id, auto ref T1 zVar, auto ref T2 varNum, auto ref T3 percent)
+extern (D) CDFstatus CDFsetVarReservePercent (
+	CDFid id, /* in */
+	int zVar, /* in */
+	c_long varNum, /* in */
+	c_long reservePercent /* in */
+){
+    return CDFlib(
+	 	SELECT_, CDF_, id, 
+		zVar ? zVAR_ : rVAR_, varNum,
+		zVar ? zVAR_RESERVEPERCENT_ : rVAR_RESERVEPERCENT_, reservePercent, NULL_
+	);
 }
 
-extern (D) auto CDFsetCompressionCacheSize(T0, T1)(auto ref T0 id, auto ref T1 numBuffers)
-{
+//extern (D) auto CDFsetCompressionCacheSize(T0, T1)(auto ref T0 id, auto ref T1 numBuffers)
+extern (D) CDFstatus CDFsetCompressionCacheSize (
+	CDFid id, /* in */
+	c_long numBuffers /* in */
+){
     return CDFlib(SELECT_, CDF_, id, COMPRESS_CACHESIZE_, numBuffers, NULL_);
 }
 
-extern (D) auto CDFsetStageCacheSize(T0, T1)(auto ref T0 id, auto ref T1 numBuffers)
-{
+//extern (D) auto CDFsetStageCacheSize(T0, T1)(auto ref T0 id, auto ref T1 numBuffers)
+extern (D) CDFstatus CDFsetStageCacheSize (
+	CDFid id, /* in */
+	c_long numBuffers /* in */
+){
     return CDFlib(SELECT_, CDF_, id, STAGE_CACHESIZE_, numBuffers, NULL_);
 }
 
-extern (D) auto CDFsetzMode(T0, T1)(auto ref T0 id, auto ref T1 zMode)
-{
+//extern (D) auto CDFsetzMode(T0, T1)(auto ref T0 id, auto ref T1 zMode)
+extern (D) CDFstatus CDFsetzMode (
+	CDFid id, /* in */
+	c_long zMode /* in */
+){
     return CDFlib(SELECT_, CDF_, id, CDF_zMODE_, zMode, NULL_);
 }
 
@@ -2102,7 +2504,11 @@ CDFstatus CDFattrInquire (CDFid id, c_long attrNum, char* attrName, c_long* attr
 CDFstatus CDFinquireAttr (CDFid id, c_long attrNum, char* attrName, c_long* attrScope, c_long* maxgEntry, c_long* maxrEntry, c_long* maxzEntry);
 CDFstatus CDFinquireAttrEntry (CDFid id, int grzEntry, c_long attrNum, c_long entryNum, c_long* dataType, c_long* numElems);
 CDFstatus CDFinquireAttrInfo (CDFid id, int zEntry, c_long attrNum, char* attrName, c_long* attrScope, c_long* maxEntry);
-CDFstatus CDFputAttrEntry (CDFid id, int grzEntry, c_long attrNum, c_long entryNum, c_long dataType, c_long numElems, void* value);
+CDFstatus CDFputAttrEntry(
+	CDFid id, int grzEntry, c_long attrNum, 
+	c_long entryNum, c_long dataType, 
+	c_long numElems, const void* value
+);
 CDFstatus CDFgetAttrEntry (CDFid id, int grzEntry, c_long attrNum, c_long entryNum, void* value);
 CDFstatus CDFgetAttrEntryNumStrings (CDFid id, int rzEntry, c_long attrNum, c_long entryNum, c_long* numStrings);
 CDFstatus CDFgetAttrEntryStrings (CDFid id, int rzEntry, c_long attrNum, c_long entryNum, c_long* numStrings, char*** strings);
@@ -2112,8 +2518,10 @@ CDFstatus CDFreadgAttrEntry (CDFid id, c_long attrNum, c_long entryNum, c_long* 
 CDFstatus CDFreadzAttrEntry (CDFid id, c_long attrNum, c_long entryNum, c_long* dataType, c_long* numElms, CDFdata* value);
 CDFstatus CDFdeleteAttrEntry (CDFid id, int grzEntry, c_long attrNum, c_long entryNum);
 CDFstatus CDFsetAttrEntryDataSpec (CDFid id, int grzEntry, c_long attrNum, c_long entryNum, c_long dataType, c_long numElems);
-c_long CDFgetAttrNum (CDFid id, char* attrName);
-c_long CDFgetVarNum (CDFid id, char* varName);
+//c_long CDFgetAttrNum (CDFid id, char* attrName);
+c_long CDFgetAttrNum (CDFid id, const char* attrName);
+//c_long CDFgetVarNum (CDFid id, char* varName);
+c_long CDFgetVarNum (CDFid id, const char* varName);
 CDFstatus CDFgetNumAttrEntries (CDFid id, int grzEntry, c_long attrNum, c_long* numEntries);
 CDFstatus CDFgetAttrMaxEntry (CDFid id, int grzEntry, c_long attrNum, c_long* maxEntry);
 CDFstatus CDFgetAttrEntryDataType (CDFid id, int grzEntry, c_long attrNum, c_long entryNum, c_long* dataType);
@@ -2285,6 +2693,10 @@ enum NONE_CHECKSUM = NO_CHECKSUM;
 
 alias StrlaststrIgCase = StrLaststrIgCase;  // dstep output changed
 alias Strlaststr = StrLaststr;              // dstep output changed
+
+// Definitions were in cdfdist.h
+int StrLaststr (char *s1, char *s2);
+int StrLaststrIgCase (char *s1, char *s2);
 
 /*****************************************************************************/
 
