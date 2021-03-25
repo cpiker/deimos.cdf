@@ -12,15 +12,12 @@ a C binary call interface.
 Initialzation of new D projects is typically handled via the 
 [dub](https://dub.pm/index.html)
 program which is the D package manager and build tool.  On Linux,
-dub is installed directly to your $PATH.  On Windows you may need
-to run:
-
-```batch
-C:\path\to\my\windows\build\tools\vcvars.bat
+dub is installed directly to your $PATH.  As usual on Windows the
+program is much harder to find.  If you're using the dmd compiler
+on Windows the program will be in a path similar to:
 ```
-in the `cmd.exe` window first.  Typically when dub is installed on 
-windows it integrates itself into your existing Visual Studio build
-enviornment.
+C:\D\dmd2\windows\bin64\dub.exe
+```
 
 The following terminal session illustrates how to initialize a new 
 test program using the CDF library.  Commands are the same on Windows,
@@ -64,15 +61,16 @@ to install those on your own.  On Linux it best to install these directly
 into `/usr/local` instead of `/usr/local/cdf` as the sub-directory "cdf"
 is not automatically searched by the linker.
 
-After you have installed libcdf.so or cdf.dll, build your project using:
+After you have installed libcdf.so or dllcdf.dll, build your project using:
 ```
 cd my_cdf_test
 dub build
 ```
 Which will autmatically fetch the [deimos.cdf package](https://code.dlang.org/packages/cdf)
 from the dub repository and add it to your project.  If you're having 
-trouble linking to cdf.dll on wondows, update your `%PATH%` environment
-variable to include the location of cdf.dll.
+trouble linking to dllcdf.dll on wondows, update your `%PATH%` environment
+variable to include the location of dllcdf.dll.  Or just copy `dllcdf.dll` 
+and `dllcdf.lib` into to top of your project directory.
 
 
 ## Module Creation Notes
