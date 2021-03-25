@@ -56,12 +56,14 @@ import deimos.cdf;
 ```
 to the automatically generated `app.d` file.
 
-The deimos.cdf package does not supply libcdf.so or cdf.dll you'll have
-to install those on your own.  On Linux it best to install these directly
-into `/usr/local` instead of `/usr/local/cdf` as the sub-directory "cdf"
-is not automatically searched by the linker.
+On Linux the deimos.cdf package does not supply libcdf.a so you'll have
+to install the standard CDF binaries on your own.  It's easier if
+you install the CDF libs directly into `/usr/local` instead of
+`/usr/local/cdf` as the sub-directory "cdf" is not automatically searched
+by the linker.  On Windows deimos.cdf caries a copy of `libcdf.lib` so
+this step isn't necessary.
 
-After you have installed libcdf.so or dllcdf.dll, build your project using:
+After you have installed libcdf.so (if needed) build your project using:
 ```
 cd my_cdf_test
 dub build
