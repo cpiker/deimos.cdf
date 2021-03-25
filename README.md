@@ -19,18 +19,18 @@ The following terminal session illustrates how to initialize a new
 test program using the CDF library.  Commands are the same on Windows,
 Linux and MacOS.
 
-```
+<pre>
 dub init my_cdf_test
 Name [my_cdf_test]: 
-Description [A minimal D application.]: *CDF Bindings Test*
+Description [A minimal D application.]: <b>CDF Bindings Test</b>
 Author name [Your Name]: 
-License [proprietary]: *Boost*
-Copyright string [Copyright © 2021, Your Name]: 
-Add dependency (leave empty to skip) []: *cdf*
+License [proprietary]: <b>Boost</b>
+Copyright string [Copyright Â© 2021, Your Name]: 
+Add dependency (leave empty to skip) []: <b>cdf</b>
 Adding dependency cdf >=3.8.0-alpha.2 <3.9.0-0
 Add dependency (leave empty to skip) []: 
 Successfully created an empty project in '/home/you/my_cdf_test'.
-```
+</pre>
 
 After the project is generated you should have a `dub.json` file that 
 looks similar to the following.
@@ -40,7 +40,7 @@ looks similar to the following.
    "authors": [
       "Your Name"
    ],
-   "copyright": "Copyright © 2021, Your Name",
+   "copyright": "Copyright Â© 2021, Your Name",
    "dependencies": {
       "cdf": ">=3.8.0-alpha.1 <3.9.0-0"
    },
