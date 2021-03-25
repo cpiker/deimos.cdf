@@ -14,7 +14,7 @@ import std.stdio;
 import core.stdc.config;
 import core.stdc.stdlib;
 
-import cdf;
+import deimos.cdf;
 
 
 // MAIN 

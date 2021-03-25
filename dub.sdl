@@ -1,9 +1,22 @@
-name "cdf"
+name        "cdf"
 description "Common Data Format (CDF) D language prototypes"
-authors "Chris Piker"
-copyright "Copyright © 2021, Chris Piker"
-license "Boost"
-targetType "sourceLibrary"
-homepage "https://cdf.gsfc.nasa.gov/"
-importPaths "."
-version "3.8.0-alpha.1"
+authors     "Chris Piker"
+copyright   "Copyright © 2021, Chris Piker"
+license     "Boost"
+homepage    "https://cdf.gsfc.nasa.gov/"
+version     "3.8.0-alpha.2"
+systemDependencies "cdf"
+libs        "cdf"
+
+configuration "application" {
+	targetType "executable"
+	mainSourceFile "examples/example1.d"
+	dflags "-i"
+}
+
+configuration "sourceLibrary" {
+	targetType "sourceLibrary"
+	excludedSourceFiles "examples/example1.d"
+	sourcePaths "."
+	importPaths "."
+}
