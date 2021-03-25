@@ -4,8 +4,8 @@
 CDF files are the most common data interchange format used in space particles
 and fields research.  [Phobos](https://dlang.org/phobos/) is the standard D
 library that comes with the D compiler. [Deimos](https://github.com/D-Programming-Deimos)
-is the namespace for secondary libraries that simply provide function
-prototypes for existing system C libraries.
+is the namespace for D bindings for non-D libraries, notably those which have
+a C binary call interface.
 
 ## Creating a D project using deimos.cdf
 
