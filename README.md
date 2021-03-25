@@ -1,7 +1,10 @@
 # deimos.cdf
 [Common Data Format](https://cdf.gsfc.nasa.gov/) (CDF) library D language bindings
 
-## Usage Notes
+CDF files are the most common data interchange format used in space particles
+and fields research.
+
+## Creating a D project using deimos.cdf
 
 Initialzation of new D projects is typically handled via the 
 [dub](https://dub.pm/index.html)
@@ -51,9 +54,9 @@ looks similar to the following.
 }
 ```
 
-This pack does not supply libcdf.so or cdf.dll you'll have to install
-those on your own.  On linux it best to install these directly into
-`/usr/local` instead of `/usr/local/cdf` as the sub-directory "cdf"
+The deimos.cdf package does not supply libcdf.so or cdf.dll you'll have
+to install those on your own.  On Linux it best to install these directly
+into `/usr/local` instead of `/usr/local/cdf` as the sub-directory "cdf"
 is not automatically searched by the linker.
 
 After you have installed libcdf.so / cdf.dll, build your project using:
@@ -61,12 +64,11 @@ After you have installed libcdf.so / cdf.dll, build your project using:
 cd my_cdf_test
 dub build
 ```
-
 Which will autmatically fetch the [cdf package](https://code.dlang.org/packages/cdf)
 from the dub repository and add it to your project.
 
 
-## Conversion Notes
+## Module Creation Notes
 
 The CDF library makes heavy use of function macros to wrap calls to a 
 lower level function named: CDFLib().  In the spirit (for good or for ill)
