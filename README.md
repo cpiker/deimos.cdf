@@ -26,18 +26,15 @@ The following terminal session illustrates how to initialize a new
 test program using the CDF library.  Commands are the same on Windows,
 Linux and MacOS.
 
-<pre>
-dub init <b>my_cdf_test</b>
+```
+dub init my_cdf_test
 Name [my_cdf_test]: 
-Description [A minimal D application.]: <b>CDF Bindings Test</b>
-Author name [Your Name]: 
-License [proprietary]: <b>Boost</b>
-Copyright string [Copyright © 2021, Your Name]: 
-Add dependency (leave empty to skip) []: <b>cdf</b>
+...
+Add dependency (leave empty to skip) []: cdf
 Adding dependency cdf >=3.8.0-alpha.2 <3.9.0-0
 Add dependency (leave empty to skip) []: 
-Successfully created an empty project in <b>'/home/you/my_cdf_test'</b>.
-</pre>
+...
+```
 
 After the project is generated you should have a `dub.json` file that 
 looks similar to the following.
@@ -56,6 +53,11 @@ looks similar to the following.
    "name": "my_cdf_test"
 }
 ```
+In order to use this package add the line:
+```D
+import deimos.cdf;
+```
+to the automatically generated `app.d` file.
 
 The deimos.cdf package does not supply libcdf.so or cdf.dll you'll have
 to install those on your own.  On Linux it best to install these directly
