@@ -13,3 +13,5 @@ cdf-test-*
 *.o
 *.obj
 *.lst
+example1.cdf
+

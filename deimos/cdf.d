@@ -113,11 +113,10 @@ extern (C):
 // Almost all versions of libcdf.so/cdf.dll have  _LARGEFILE_SOURCE defined.
 // Assume that is the case and reproduce logic of cdfdist.h line 522
 
-version(Win32){ alias OFF_T = long; }
-else{
-   version(MinGW){ alias OFF_T = off64_t; }  // don't know what this is, fix later
-   else{   alias OFF_T = off_t; }
-}
+version(Win32){      alias OFF_T = long; }
+else version(Win64){ alias OFF_T = long; }
+else version(MinGW){ alias OFF_T = off64_t; } 
+else{                alias OFF_T = off_t; }
 
 /******************************************************************************
 * CDF defined types
@@ -181,24 +180,24 @@ enum EPOCHx_FORMAT_MAX = 68;
 * Data types.
 ******************************************************************************/
 
-enum CDF_INT1 = 1L;
-enum CDF_INT2 = 2L;
-enum CDF_INT4 = 4L;
-enum CDF_INT8 = 8L;
-enum CDF_UINT1 = 11L;
-enum CDF_UINT2 = 12L;
-enum CDF_UINT4 = 14L;
-enum CDF_REAL4 = 21L;
-enum CDF_REAL8 = 22L;
-enum CDF_EPOCH = 31L; /* Standard style. */
-enum CDF_EPOCH16 = 32L; /* Extended style. */
-enum CDF_TIME_TT2000 = 33L; /* One more style with leap seconds
+enum CDF_INT1 = 1;
+enum CDF_INT2 = 2;
+enum CDF_INT4 = 4;
+enum CDF_INT8 = 8;
+enum CDF_UINT1 = 11;
+enum CDF_UINT2 = 12;
+enum CDF_UINT4 = 14;
+enum CDF_REAL4 = 21;
+enum CDF_REAL8 = 22;
+enum CDF_EPOCH = 31; /* Standard style. */
+enum CDF_EPOCH16 = 32; /* Extended style. */
+enum CDF_TIME_TT2000 = 33; /* One more style with leap seconds
                   and J2000 base time. */
-enum CDF_BYTE = 41L; /* same as CDF_INT1 (signed) */
-enum CDF_FLOAT = 44L; /* same as CDF_REAL4 */
-enum CDF_DOUBLE = 45L; /* same as CDF_REAL8 */
-enum CDF_CHAR = 51L; /* a "string" data type */
-enum CDF_UCHAR = 52L; /* a "string" data type */
+enum CDF_BYTE = 41; /* same as CDF_INT1 (signed) */
+enum CDF_FLOAT = 44; /* same as CDF_REAL4 */
+enum CDF_DOUBLE = 45; /* same as CDF_REAL8 */
+enum CDF_CHAR = 51; /* a "string" data type */
+enum CDF_UCHAR = 5L; /* a "string" data type */
 
 /******************************************************************************
 * Encoding (for data only, everything else is network encoding).

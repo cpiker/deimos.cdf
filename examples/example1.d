@@ -88,24 +88,24 @@ int main () {
 
 	// Write TITLE gAttribute gEntry.
 	status = CDFputAttrgEntry (id, titleAttrNum, 
-	                           0L,        /* Attribute entry number */
-	                           CDF_CHAR, title[0].length, title[0].ptr); 
+	                           0,        /* Attribute entry number */
+	                           CDF_CHAR, cast(c_long)title[0].length, title[0].ptr); 
 	if (status != CDF_OK) StatusHandler (status);
 
 	status = CDFputAttrgEntry (id, titleAttrNum, 
-                           1L,        /* Attribute entry number */
-                           CDF_CHAR, title[1].length, title[1].ptr); 
+                           1,        /* Attribute entry number */
+                           CDF_CHAR, cast(c_long)title[1].length, title[1].ptr); 
 	if (status != CDF_OK) StatusHandler (status);
 
 	//Write vAttribute zEntries for 'Time' zVariable.
 
 	status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"FIELDNAM".ptr), 
-                           CDFvarNum(id,"Time".ptr), CDF_CHAR, 19L,
+                           CDFvarNum(id,"Time".ptr), CDF_CHAR, 19,
                            "Time of observation".ptr);
 	if (status != CDF_OK) StatusHandler (status);
 
 	status = CDFputAttrzEntry (id, CDFgetAttrNum(id,"UNITS".ptr), 
-                           CDFvarNum(id,"Time".ptr), CDF_CHAR, 11L,
+                           CDFvarNum(id,"Time".ptr), CDF_CHAR, 11,
                            "Hour/Minute".ptr);
 
 	// Write data for 'Time' zVariable.
@@ -127,9 +127,9 @@ int main () {
 	   lat[s+90] = s;
 
 	status = CDFhyperPutzVarData (id, LatVarNum,
-		0L,           /* record start */
-		1L,           /* # of records to write */
-		1L,           /* record interval */
+		0,           /* record start */
+		1,           /* # of records to write */
+		1,           /* record interval */
 		dimIndices.ptr,   /* dimension dimIndices */
 		dimCounts.ptr,    /* dimension counts */
 		dimInterval.ptr,  /* dimension interval */
@@ -152,9 +152,9 @@ int main () {
 	   image[i] = i;
 
 	status = CDFhyperPutzVarData(id, ImageVarNum,
-		0L,           /* record start */
-		3L,           /* # of records to write */
-		1L,           /* record interval */
+		0,           /* record start */
+		3,           /* # of records to write */
+		1,           /* record interval */
 		dimIndices.ptr,   /* dimension dimIndices */
 		dimCounts.ptr,    /* dimension counts */
 		dimInterval.ptr,  /* dimension interval */
