@@ -10,7 +10,7 @@ dub is installed directly to your $PATH.  On windows you may need
 to run:
 
 ```batch
-C:\\path\to\my\windows\build\tools\vcvars.bat
+C:\path\to\my\windows\build\tools\vcvars.bat
 ```
 in the `cmd.exe` window first.  Typically when dub is installed on 
 windows it integrates itself into your existing Visual Studio build
