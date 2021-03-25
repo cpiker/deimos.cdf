@@ -3,10 +3,11 @@
 
 ## Usage Notes
 
-Initialzation of new D projects is typically handled via the `dub`
+Initialzation of new D projects is typically handled via the 
+[dub](https://dub.pm/index.html)
 program which is the D package manager and build tool.  On linux,
-dub is installed directly to your programs path.  On windows
-you may need to run:
+dub is installed directly to your $PATH.  On windows you may need
+to run:
 
 ```batch
 C:\\path\to\my\windows\build\tools\vcvars.bat
@@ -20,7 +21,7 @@ test program using the CDF library.  Commands are the same on Windows,
 Linux and MacOS.
 
 <pre>
-dub init my_cdf_test
+dub init <b>my_cdf_test</b>
 Name [my_cdf_test]: 
 Description [A minimal D application.]: <b>CDF Bindings Test</b>
 Author name [Your Name]: 
@@ -29,7 +30,7 @@ Copyright string [Copyright © 2021, Your Name]:
 Add dependency (leave empty to skip) []: <b>cdf</b>
 Adding dependency cdf >=3.8.0-alpha.2 <3.9.0-0
 Add dependency (leave empty to skip) []: 
-Successfully created an empty project in '/home/you/my_cdf_test'.
+Successfully created an empty project in <b>'/home/you/my_cdf_test'</b>.
 </pre>
 
 After the project is generated you should have a `dub.json` file that 
@@ -52,18 +53,17 @@ looks similar to the following.
 
 This pack does not supply libcdf.so or cdf.dll you'll have to install
 those on your own.  On linux it best to install these directly into
-'/usr/local' instead of '/usr/local/cdf' as the sub-directory 'cdf' 
+`/usr/local` instead of `/usr/local/cdf` as the sub-directory "cdf"
 is not automatically searched by the linker.
 
-After you have installed libcdf.so/cdf.dll, build your project by 
-giving the commands:
+After you have installed libcdf.so / cdf.dll, build your project using:
 ```
 cd my_cdf_test
 dub build
 ```
 
-Which will autmatically fetch these wrappers from the dub package
-repository and add them to your project.
+Which will autmatically fetch the [cdf package](https://code.dlang.org/packages/cdf)
+from the dub repository and add it to your project.
 
 
 ## Conversion Notes
