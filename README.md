@@ -5,8 +5,8 @@
 
 Initialzation of new D projects is typically handled via the 
 [dub](https://dub.pm/index.html)
-program which is the D package manager and build tool.  On linux,
-dub is installed directly to your $PATH.  On windows you may need
+program which is the D package manager and build tool.  On Linux,
+dub is installed directly to your $PATH.  On Windows you may need
 to run:
 
 ```batch
