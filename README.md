@@ -43,10 +43,9 @@ looks similar to the following.
    ],
    "copyright": "Copyright © 2021, Your Name",
    "dependencies": {
-      "cdf": ">=3.8.0-alpha.1 <3.9.0-0"
+      "cdf": ">=3.8.0-alpha.3 <3.9.0-0"
    },
    "description": "CDF Bindings Test",
-   "license": "Boost",
    "name": "my_cdf_test"
 }
 ```
