@@ -4,7 +4,7 @@ authors     "Chris Piker"
 copyright   "Copyright © 2021, Chris Piker"
 license     "Boost"
 homepage    "https://cdf.gsfc.nasa.gov/"
-version     "main"
+//version     "3.8.0-alpha.3"  //bump when tagging new version
 systemDependencies "cdf"
 libs        "cdf" platform="posix"
 sourceFiles "deps/libcdf.lib" platform="windows-x86_64"
