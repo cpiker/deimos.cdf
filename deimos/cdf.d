@@ -94,7 +94,7 @@
 *    modules.
 *
 * The first iteration of this process was handled manually.  For future 
-* updates an automatic converter shoud be written using the experience 
+* updates an automatic converter should be written using the experience 
 * gained from converting version 3.8. 
 *
 *   -- C. Piker 2021-03-23
@@ -919,9 +919,94 @@ extern (D) auto CDFhyperGetrVarData(T0, T1, T2, T3, T4, T5, T6, T7, T8)(auto ref
     return CDFhyperGetVarData(id, 0, varNum, recS, recC, recI, indices, counts, intervals, buff);
 }
 
-extern (D) auto CDFhyperGetzVarData(T0, T1, T2, T3, T4, T5, T6, T7, T8)(auto ref T0 id, auto ref T1 varNum, auto ref T2 recS, auto ref T3 recC, auto ref T4 recI, auto ref T5 indices, auto ref T6 counts, auto ref T7 intervals, auto ref T8 buff)
-{
-    return CDFhyperGetVarData(id, 1, varNum, recS, recC, recI, indices, counts, intervals, buff);
+
+/++
+CDFhyperGetzVarData is used to read one or more values for the specified zVariable. It is important to know the
+variable majority of the CDF before using this function because the values placed into the data buffer will be in that
+majority. [CDFinquireCDF] can be used to determine the default variable majority of a CDF distribution. The Concepts
+chapter in the CDF User's Guide describes the variable majorities.
+
+The record number starts at 0, not 1. For example, if you want to read the first 5 records, the starting record number
+(recStart), the number of records to read (recCount), and the record interval (recInterval) should be 0, 5, and 1,
+respectively.
+
+Params:
+	id = The identifier of the CDF. This identifier must have been initialized by a call to CDFcreate (or
+	     CDFcreateCDF) or CDFopenCDF.
+
+	varNum = The zVariable number from which to read data. This number may be determined with a call to
+	     CDFgetVarNum.
+
+	recStart = The record number at which to start reading.
+
+	recCount = The number of records to read.
+
+	recInterval = The reading interval between records (e.g., an interval of 2 means read every other record).
+
+	indices = The dimension indices (within each record) at which to start reading. Each element of indices
+	   specifies the corresponding dimension index. For 0-dimensional zVariable, this argument is
+	   ignored (but must be present).
+
+	counts = The number of values along each dimension to read. Each element of counts specifies the
+	   corresponding dimension count. For 0-dimensional zVariable, this argument is ignored (but
+	   must be present).
+
+	intervals = For each dimension, the dimension interval between reading (e.g., an interval of 2 means read
+	   every other value). Each element of intervals specifies the corresponding dimension interval.
+	   For 0-dimensional zVariable, this argument is ignored (but must be present).
+
+	buffer = The data holding buffer for the read values. The majority of the values in this buffer will be the
+	   same as that of the CDF. This buffer must be large to hold the values. CDFinquirezVar can be
+	   used to determine the zVariable's data type and number of elements (of that data type) at each
+	   value.
+		
+Examples:
+	The following example will read 3 records of data, starting at record number 13 (14th record), from a zVariable named
+	Temperature The variable is a 3-dimensional array with sizes [180,91,10] and the CDF\u2019s variable majority is
+	ROW_MAJOR. The record variance is VARY, the dimension variances are [VARY,VARY,VARY], and the data type
+	is CDF_REAL4. This example is similar to the CDFgetzVarData example except that it uses a single call to
+	CDFhyperGetzVarData (rather than numerous calls to. CDFgetzVarData).
+
+---
+CDFid id;                  // CDF identifier. 
+float[10][91][180][3] tmp; // Temperature values.
+c_long varN; 
+c_long recStart = 13;        // Start record number.
+c_long recCount = 3;         // Number of records to read
+c_long recInterval = 1;      // Record interval - read every record
+
+c_long[3] indices   = [0,0,0];     // Dimension indices. 
+c_long[3] counts    = [180,91,10]; // Dimension counts.
+c_long[3] intervals = [1,1,1];     // Dimension intervals - read every value
+
+c_long varN = CDFgetVarNum (id, "Temperature");  // zVariable number
+if (varN < CDF_OK) UserStatusHandler (varN);
+
+CDFstatus status = CDFhyperGetzVarData(
+    id, varN, recStart, recCount, recInterval, indices, counts, intervals, tmp
+);
+
+if (status != CDF_OK) UserStatusHandler (status);
+---
+
+Note that if the CDF's variable majority had been COLUMN_MAJOR, the tmp array would have been declared:
+---
+float[3][180][91][10] tmp;
+---
+for proper indexing.
++/
+extern (D) CDFstatus CDFhyperGetzVarData(
+   CDFid id, /* in */
+   c_long varNum, /* in */
+   c_long recStart, /* in */
+   c_long recCount, /* in */
+   c_long recInterval, /* in */
+   const c_long *indices, /* in */
+   const c_long *counts, /* in */
+   c_long* intervals, /* in */
+   void *buffer /* out */
+){
+    return CDFhyperGetVarData(id, 1, varNum, recStart, recCount, recInterval, indices, counts, intervals, buffer);
 }
 
 alias CDFvarClose = CDFcloserVar;  // dstep output changed
