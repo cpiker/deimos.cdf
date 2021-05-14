@@ -68,10 +68,7 @@ cd my_cdf_test
 dub build
 ```
 Which will autmatically fetch the [deimos.cdf package](https://code.dlang.org/packages/cdf)
-from the dub repository and add it to your project.  If you're having 
-trouble linking to dllcdf.dll on wondows, update your `%PATH%` environment
-variable to include the location of dllcdf.dll.  Or just copy `dllcdf.dll` 
-and `dllcdf.lib` into to top of your project directory.
+from the dub repository and add it to your project.
 
 
 ## Module Creation Notes
